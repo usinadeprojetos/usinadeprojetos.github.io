@@ -795,7 +795,9 @@ function start(D){
   $('#foot-upd').textContent = `Dados atualizados em ${fmtD(D.atualizado_em)} a partir do mural de tarefas (ClickUp), do acervo de projetos (Nextcloud) e do e-mail oficial da Usina.`;
 
   /* ---------- QR code ---------- */
-  const siteUrl = D.site_url || (location.protocol.startsWith('http') ? location.href.split('#')[0] : '');
+  // hospedado (GitHub Pages ou domínio do Conselho): usa o endereço atual; artifact/arquivo local: usa o endereço oficial
+  const hospedado = location.protocol.startsWith('http') && /(github\.io|lindeiros\.org\.br)$/i.test(location.hostname);
+  const siteUrl = hospedado ? location.href.split('#')[0] : (D.site_url || (location.protocol.startsWith('http') ? location.href.split('#')[0] : ''));
   if (siteUrl && window.qrcode) { try { const q = qrcode(0, 'M'); q.addData(siteUrl); q.make(); $('#qr').innerHTML = q.createImgTag(4, 2); $('#qr-url').textContent = siteUrl.replace(/^https?:\/\//, ''); } catch (e) { $('#qr-url').textContent = siteUrl; } }
   else { $('#qr-url').textContent = siteUrl ? siteUrl : 'O QR code aparece quando o site estiver publicado na internet.'; }
 
