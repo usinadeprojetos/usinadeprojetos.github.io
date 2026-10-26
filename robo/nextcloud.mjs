@@ -1,23 +1,20 @@
-// Robô Nextcloud -> site da Usina de Projetos. SOMENTE LEITURA no Nextcloud (PROPFIND e GET).
+// Robô Nextcloud -> site da Usina de Projetos. SOMENTE LEITURA no Nextcloud (status.php, OCS /cloud/user, PROPFIND e GET).
 // Para cada projeto de dados.json que tenha:
 //   - "nextcloud": [pastas]            -> gera "acervo": quantos arquivos de projeto a Usina produziu, por tipo, e a data do último
 //   - "galeria_nextcloud": [itens]     -> gera "imagens": galeria curada (pranchas em PDF viram JPG da página indicada; renders são redimensionados)
 // Roda no GitHub Actions depois de robo/atualizar.mjs. Precisa de poppler-utils (pdftoppm) e ImageMagick (convert).
-// Segredos: NEXTCLOUD_URL (sem barra no fim), NEXTCLOUD_USER, NEXTCLOUD_SENHA (senha de aplicativo).
+// Segredos: NEXTCLOUD_URL, NEXTCLOUD_USER (login ou e-mail), NEXTCLOUD_SENHA (senha de aplicativo).
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-const BASE = (process.env.NEXTCLOUD_URL || '').trim().replace(/\/+$/, '');
+const URL_INFORMADA = (process.env.NEXTCLOUD_URL || '').trim().replace(/\/+$/, '');
 const USER = (process.env.NEXTCLOUD_USER || '').trim();
 const PASS = process.env.NEXTCLOUD_SENHA || '';
-if (!BASE || !USER || !PASS) { console.error('Faltam os segredos NEXTCLOUD_URL, NEXTCLOUD_USER e NEXTCLOUD_SENHA'); process.exit(1); }
-
+if (!URL_INFORMADA || !USER || !PASS) { console.error('Faltam os segredos NEXTCLOUD_URL, NEXTCLOUD_USER e NEXTCLOUD_SENHA'); process.exit(1); }
 const AUTH = 'Basic ' + Buffer.from(`${USER}:${PASS}`).toString('base64');
-const ROOT = `${BASE}/remote.php/dav/files/${encodeURIComponent(USER)}`;
-const dav = p => ROOT + p.split('/').map(encodeURIComponent).join('/');
 
 const IGNORAR_PASTA = /backup|revit_temp|antigos|anteriores|_shortcuts|datatop|\.sync/i;
 // pastas/arquivos recebidos das prefeituras ou de terceiros (não contam como produção da Usina)
@@ -25,9 +22,44 @@ const RECEBIDO = /recebid|disponibilizad|dados recebidos|documentos|\bdocs\b|fot
 const EXT_PROJETO = /\.(dwg|dxf|rvt|rfa|ifc|skp|pdf|docx?|xlsx?|kmz|kml|nwc)$/i;
 const EXT_IMAGEM = /\.(png|jpe?g|webp)$/i;
 const hoje = new Date().toISOString().slice(0, 10);
+const espera = ms => new Promise(r => setTimeout(r, ms));
+
+async function fetchRetry(url, opts, tentativas = 3) {
+  let erro;
+  for (let i = 0; i < tentativas; i++) {
+    try { return await fetch(url, opts); } catch (e) { erro = e; await espera(1500 * (i + 1)); }
+  }
+  throw new Error(`rede: ${erro && erro.message}`);
+}
+
+// 1) descobre a URL base (com ou sem /nextcloud) pelo status.php, que é público
+async function descobrirBase() {
+  const candidatos = [...new Set([URL_INFORMADA, URL_INFORMADA + '/nextcloud', URL_INFORMADA.replace(/\/nextcloud$/, '')])];
+  for (const b of candidatos) {
+    try { const r = await fetchRetry(b + '/status.php', {}, 2); if (r.ok) { const j = await r.json(); if (j && j.installed) { console.log(`Nextcloud ${j.versionstring || ''} encontrado`); return b; } } } catch {}
+  }
+  throw new Error('status.php não respondeu em nenhuma variação da NEXTCLOUD_URL');
+}
+// 2) descobre o id interno do usuário (o caminho WebDAV usa o id, não o e-mail nem o nome)
+async function descobrirUsuario(base) {
+  const r = await fetchRetry(base + '/ocs/v1.php/cloud/user?format=json', { headers: { Authorization: AUTH, 'OCS-APIRequest': 'true' } });
+  if (!r.ok) throw new Error(`OCS /cloud/user -> HTTP ${r.status} (usuário ou senha de aplicativo incorretos?)`);
+  const j = await r.json();
+  const id = j && j.ocs && j.ocs.data && j.ocs.data.id;
+  if (!id) throw new Error('OCS /cloud/user não devolveu o id do usuário');
+  return id;
+}
+
+const BASE = await descobrirBase();
+const ID = await descobrirUsuario(BASE);
+console.log(`usuário autenticado (id com ${ID.length} caracteres)`);
+const ROOT = `${BASE}/remote.php/dav/files/${encodeURIComponent(ID)}`;
+const dav = p => ROOT + p.split('/').map(encodeURIComponent).join('/');
+const cacheDir = new Map();
 
 async function propfind(pasta) {
-  const r = await fetch(dav(pasta) + '/', {
+  if (cacheDir.has(pasta)) return cacheDir.get(pasta);
+  const r = await fetchRetry(dav(pasta) + '/', {
     method: 'PROPFIND',
     headers: { Authorization: AUTH, Depth: '1', 'Content-Type': 'application/xml; charset=utf-8' },
     body: '<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:getlastmodified/><d:getcontentlength/><d:resourcetype/></d:prop></d:propfind>'
@@ -39,24 +71,38 @@ async function propfind(pasta) {
     const b = m[1];
     const href = (b.match(/<d:href>([^<]+)<\/d:href>/i) || [])[1] || '';
     const i = href.indexOf('/dav/files/'); if (i < 0) continue;
-    const depois = href.slice(i + '/dav/files/'.length);          // usuario/caminho...
+    const depois = href.slice(i + '/dav/files/'.length);          // id/caminho...
     const j = depois.indexOf('/'); if (j < 0) continue;
     const rel = decodeURIComponent(depois.slice(j)).replace(/\/$/, '');
-    if (rel === pasta.replace(/\/$/, '')) continue;               // a própria pasta
+    if (rel === pasta.replace(/\/$/, '') || rel === '') continue;  // a própria pasta
     const dir = /<d:collection\s*\/?>/i.test(b);
     const mod = (b.match(/<d:getlastmodified>([^<]+)</i) || [])[1];
     const bytes = Number((b.match(/<d:getcontentlength>(\d+)</i) || [])[1] || 0);
     itens.push({ path: rel, nome: path.posix.basename(rel), dir, mod: mod ? new Date(mod).toISOString().slice(0, 10) : null, bytes });
   }
+  cacheDir.set(pasta, itens);
+  await espera(120);
   return itens;
 }
 
-async function varrer(pasta, prof, acc) {
+// 3) localiza /2_Prefeituras: na raiz ou dentro de uma pasta compartilhada
+const raiz = await propfind('/');
+console.log('pastas na raiz: ' + raiz.filter(x => x.dir).map(x => x.nome).join(' | '));
+let PREFIXO = '';
+if (!raiz.some(x => x.dir && x.nome === '2_Prefeituras')) {
+  for (const d of raiz.filter(x => x.dir)) {
+    try { if ((await propfind(d.path)).some(x => x.dir && x.nome === '2_Prefeituras')) { PREFIXO = d.path; break; } } catch {}
+  }
+  if (PREFIXO) console.log(`2_Prefeituras fica dentro de "${PREFIXO}"`); else console.warn('2_Prefeituras não encontrada na raiz nem no 1º nível');
+}
+const caminho = p => PREFIXO + p;
+
+async function varrer(pasta, prof, acc, estado) {
   if (prof > 7) return;
   let itens;
-  try { itens = await propfind(pasta); } catch (e) { console.warn('  aviso:', e.message); return; }
+  try { itens = await propfind(pasta); estado.ok++; } catch (e) { console.warn('  aviso:', e.message); estado.erro++; return; }
   for (const it of itens) {
-    if (it.dir) { if (!IGNORAR_PASTA.test(it.nome)) await varrer(it.path, prof + 1, acc); }
+    if (it.dir) { if (!IGNORAR_PASTA.test(it.nome)) await varrer(it.path, prof + 1, acc, estado); }
     else acc.push(it);
   }
 }
@@ -76,7 +122,7 @@ function resumoAcervo(arquivos, pastas) {
 }
 
 async function baixar(arquivo, destino) {
-  const r = await fetch(dav(arquivo), { headers: { Authorization: AUTH } });
+  const r = await fetchRetry(dav(arquivo), { headers: { Authorization: AUTH } });
   if (!r.ok) throw new Error(`GET ${arquivo} -> HTTP ${r.status}`);
   await fs.writeFile(destino, Buffer.from(await r.arrayBuffer()));
 }
@@ -99,27 +145,28 @@ const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'nextcloud-'));
 let nAcervo = 0, nImagens = 0, nBaixadas = 0;
 
 for (const p of dados.projetos) {
-  const pastas = p.nextcloud || [];
+  const pastas = (p.nextcloud || []).map(caminho);
   const curadoria = p.galeria_nextcloud || [];
   if (!pastas.length && !curadoria.length) continue;
   console.log(`- ${p.slug}`);
 
   if (pastas.length) {
-    const arquivos = [];
-    for (const pasta of pastas) await varrer(pasta, 0, arquivos);
-    p.acervo = resumoAcervo(arquivos, pastas);
-    nAcervo++;
-    console.log(`  acervo: ${p.acervo.usina} arquivos da Usina (${Object.entries(p.acervo.por_tipo).map(([k, v]) => k + ' ' + v).join(', ')}), ${p.acervo.recebidos} recebidos, último ${p.acervo.ultimo || '-'}`);
+    const arquivos = [], estado = { ok: 0, erro: 0 };
+    for (const pasta of pastas) await varrer(pasta, 0, arquivos, estado);
+    if (estado.ok > 0) {
+      p.acervo = resumoAcervo(arquivos, pastas);
+      nAcervo++;
+      console.log(`  acervo: ${p.acervo.usina} arquivos da Usina (${Object.entries(p.acervo.por_tipo).map(([k, v]) => k + ' ' + v).join(', ')}), ${p.acervo.recebidos} recebidos, último ${p.acervo.ultimo || '-'}`);
+    } else console.warn('  acervo mantido como estava (nenhuma pasta pôde ser lida)');
   }
 
   if (curadoria.length) {
-    // expande itens de pasta (até "max" imagens, em ordem de nome) e monta a lista final de fontes
     const fontes = [];
     for (const it of curadoria) {
-      if (it.arquivo) fontes.push({ arquivo: it.arquivo, legenda: it.legenda || '', pagina: it.pagina || 1 });
+      if (it.arquivo) fontes.push({ arquivo: caminho(it.arquivo), legenda: it.legenda || '', pagina: it.pagina || 1 });
       else if (it.pasta) {
         try {
-          const imgs = (await propfind(it.pasta)).filter(x => !x.dir && EXT_IMAGEM.test(x.nome)).sort((a, b) => a.nome.localeCompare(b.nome)).slice(0, it.max || 4);
+          const imgs = (await propfind(caminho(it.pasta))).filter(x => !x.dir && EXT_IMAGEM.test(x.nome)).sort((a, b) => a.nome.localeCompare(b.nome)).slice(0, it.max || 4);
           imgs.forEach((x, k) => fontes.push({ arquivo: x.path, legenda: (it.legenda || '') + (imgs.length > 1 ? ` (${k + 1}/${imgs.length})` : ''), pagina: 1 }));
         } catch (e) { console.warn('  aviso:', e.message); }
       }
@@ -129,22 +176,28 @@ for (const p of dados.projetos) {
     for (let k = 0; k < fontes.length; k++) {
       const f = fontes[k];
       const src = `img/galeria/${p.slug}-${k + 1}.jpg`;
+      const anterior = anteriores.find(im => im.src === src && im.fonte.arquivo === f.arquivo && im.fonte.pagina === f.pagina);
       let meta = null;
       try { meta = (await propfind(path.posix.dirname(f.arquivo))).find(x => x.path === f.arquivo) || null; } catch (e) { console.warn('  aviso:', e.message); }
-      if (!meta) { console.warn(`  não encontrado no Nextcloud: ${f.arquivo}`); continue; }
+      if (!meta) {
+        if (anterior && fsSync.existsSync(src)) { imagens.push(anterior); console.warn(`  mantida a imagem anterior (arquivo não lido agora): ${f.arquivo}`); }
+        else console.warn(`  não encontrado no Nextcloud: ${f.arquivo}`);
+        continue;
+      }
       const fonte = { arquivo: f.arquivo, mod: meta.mod, bytes: meta.bytes, pagina: f.pagina };
-      const igual = anteriores.find(im => im.src === src && im.fonte.arquivo === fonte.arquivo && im.fonte.mod === fonte.mod && im.fonte.bytes === fonte.bytes && im.fonte.pagina === fonte.pagina);
-      if (igual && fsSync.existsSync(src)) { imagens.push({ src, legenda: f.legenda, fonte }); continue; }   // já temos esta imagem
+      if (anterior && anterior.fonte.mod === fonte.mod && anterior.fonte.bytes === fonte.bytes && fsSync.existsSync(src)) { imagens.push({ src, legenda: f.legenda, fonte }); continue; }
       try {
         const local = path.join(tmp, `${p.slug}-${k + 1}${path.extname(f.arquivo).toLowerCase()}`);
         await baixar(f.arquivo, local);
         paraJpg(local, src, f.pagina);
         imagens.push({ src, legenda: f.legenda, fonte });
         nBaixadas++;
-        console.log(`  imagem ${k + 1}: ${f.arquivo} (${(meta.bytes / 1048576).toFixed(1)} MB) -> ${src}`);
-      } catch (e) { console.warn(`  falhou ${f.arquivo}: ${e.message}`); }
+        console.log(`  imagem ${k + 1}: ${path.posix.basename(f.arquivo)} (${(meta.bytes / 1048576).toFixed(1)} MB) -> ${src}`);
+      } catch (e) {
+        console.warn(`  falhou ${f.arquivo}: ${e.message}`);
+        if (anterior && fsSync.existsSync(src)) imagens.push(anterior);
+      }
     }
-    // remove sobras de execuções anteriores (ex.: lista encurtou)
     for (const f of fsSync.readdirSync('img/galeria')) {
       if (f.startsWith(p.slug + '-') && !imagens.some(im => im.src.endsWith('/' + f))) fsSync.unlinkSync(path.join('img/galeria', f));
     }
