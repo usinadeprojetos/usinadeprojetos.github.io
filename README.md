@@ -3,6 +3,11 @@
 Site estático: `index.html` (página), `dados.js` / `dados.json` (todos os dados) e `img/` (logos, satélite e galeria).
 Não precisa de servidor, banco de dados nem instalação — basta publicar a pasta (GitHub Pages).
 
+Endereço oficial: **https://usinadeprojetos.github.io/** (o endereço antigo, mwengenhariaa.github.io/site, redireciona para cá).
+
+## Forçar uma atualização agora
+Aba *Actions* → *Atualizar dados do ClickUp* → *Run workflow*. Em 1–2 minutos o site é republicado.
+
 ## Atualizar à mão
 Substitua `dados.js` (e `dados.json`) e faça o commit. O GitHub Pages republica em cerca de um minuto.
 
