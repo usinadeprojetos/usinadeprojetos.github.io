@@ -174,7 +174,8 @@ for (const p of dados.projetos) {
   if (curadoria.length) {
     const fontes = [];
     for (const it of curadoria) {
-      if (it.arquivo) fontes.push({ arquivo: caminho(it.arquivo), legenda: it.legenda || '', pagina: it.pagina || 1 });
+      if (it.src) fontes.push({ src: it.src, legenda: it.legenda || '' });   // imagem fixa já no repositório (ex.: render enviado pela equipe)
+      else if (it.arquivo) fontes.push({ arquivo: caminho(it.arquivo), legenda: it.legenda || '', pagina: it.pagina || 1 });
       else if (it.pasta) {
         try {
           const imgs = (await propfind(caminho(it.pasta))).filter(x => !x.dir && EXT_IMAGEM.test(x.nome)).sort((a, b) => a.nome.localeCompare(b.nome)).slice(0, it.max || 4);
@@ -184,9 +185,16 @@ for (const p of dados.projetos) {
     }
     const anteriores = (p.imagens || []).filter(im => im.fonte);
     const imagens = [];
+    let geradas = 0;
     for (let k = 0; k < fontes.length; k++) {
       const f = fontes[k];
-      const src = `img/galeria/${p.slug}-${k + 1}.jpg`;
+      if (f.src) {
+        if (fsSync.existsSync(f.src)) imagens.push({ src: f.src, legenda: f.legenda, fonte: { arquivo: 'repositorio:' + f.src } });
+        else console.warn(`  imagem fixa não existe no repositório: ${f.src}`);
+        continue;
+      }
+      geradas++;
+      const src = `img/galeria/${p.slug}-${geradas}.jpg`;
       const anterior = anteriores.find(im => im.src === src && im.fonte.arquivo === f.arquivo && im.fonte.pagina === f.pagina);
       let meta = null;
       try { meta = (await propfind(path.posix.dirname(f.arquivo))).find(x => x.path === f.arquivo) || null; } catch (e) { console.warn('  aviso:', e.message); }
