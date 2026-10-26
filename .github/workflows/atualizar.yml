@@ -2,11 +2,15 @@ name: Atualizar dados do ClickUp
 
 on:
   schedule:
-    - cron: '17 */3 * * *'   # a cada 3 horas (horário UTC)
+    - cron: '0 1 * * *'      # todo dia às 22h (horário de Brasília = 01h UTC)
   workflow_dispatch:         # botão "Run workflow" na aba Actions
 
 permissions:
   contents: write
+
+concurrency:
+  group: atualizar-site
+  cancel-in-progress: false
 
 jobs:
   atualizar:
@@ -16,13 +20,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Ferramentas para gerar imagens (pdftoppm, convert)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils imagemagick > /dev/null
       - name: Ler ClickUp e regerar dados.js
         run: node robo/atualizar.mjs
         env:
           CLICKUP_TOKEN: ${{ secrets.CLICKUP_TOKEN }}
+      - name: Ler Nextcloud (acervo e galeria)
+        continue-on-error: true      # se o Nextcloud estiver fora do ar, o ClickUp ainda é publicado
+        run: node robo/nextcloud.mjs
+        env:
+          NEXTCLOUD_URL: ${{ secrets.NEXTCLOUD_URL }}
+          NEXTCLOUD_USER: ${{ secrets.NEXTCLOUD_USER }}
+          NEXTCLOUD_SENHA: ${{ secrets.NEXTCLOUD_SENHA }}
       - name: Publicar se houve mudança
         run: |
           git config user.name "robo-usina"
           git config user.email "robo@usina.local"
-          git add dados.js dados.json
-          if git diff --cached --quiet; then echo "Sem mudanças"; else git commit -m "Atualiza dados do ClickUp ($(date -u +%Y-%m-%d\ %H:%M) UTC)" && git push; fi
+          git add dados.js dados.json img/galeria
+          if git diff --cached --quiet; then echo "Sem mudanças"; else git commit -m "Atualiza dados ($(date -u +%Y-%m-%d\ %H:%M) UTC)" && git push; fi
