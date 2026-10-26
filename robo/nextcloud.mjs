@@ -8,7 +8,7 @@ import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 
 const URL_INFORMADA = (process.env.NEXTCLOUD_URL || '').trim().replace(/\/+$/, '');
 const USER = (process.env.NEXTCLOUD_USER || '').trim();
@@ -138,9 +138,20 @@ async function baixar(arquivo, destino) {
   await fs.writeFile(destino, Buffer.from(await r.arrayBuffer()));
 }
 
+// pdftoppm (poppler) não vem no runner: instala só quando há PDF novo para converter (na maioria das noites nada muda)
+let popplerOk = null;
+function garantePoppler() {
+  if (popplerOk === null) { try { execFileSync('pdftoppm', ['-v'], { stdio: 'ignore' }); popplerOk = true; } catch { popplerOk = false; } }
+  if (!popplerOk) {
+    console.log('  instalando poppler-utils…');
+    try { execSync('sudo apt-get install -y -qq poppler-utils >/dev/null 2>&1 || (sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -y -qq poppler-utils >/dev/null 2>&1)', { stdio: 'inherit' }); popplerOk = true; }
+    catch (e) { throw new Error('não foi possível instalar poppler-utils: ' + e.message); }
+  }
+}
 function paraJpg(entrada, saida, pagina) {
   const dir = path.dirname(saida), prefixo = path.basename(saida, '.jpg') + '-tmp';
   if (/\.pdf$/i.test(entrada)) {
+    garantePoppler();
     execFileSync('pdftoppm', ['-f', String(pagina), '-l', String(pagina), '-scale-to', '1600', '-jpeg', '-jpegopt', 'quality=82', entrada, path.join(dir, prefixo)]);
     const gerado = fsSync.readdirSync(dir).find(f => f.startsWith(prefixo + '-') && f.endsWith('.jpg'));
     if (!gerado) throw new Error('pdftoppm não gerou imagem');
