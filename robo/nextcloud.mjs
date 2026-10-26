@@ -34,11 +34,20 @@ async function fetchRetry(url, opts, tentativas = 3) {
 
 // 1) descobre a URL base (com ou sem /nextcloud) pelo status.php, que é público
 async function descobrirBase() {
-  const candidatos = [...new Set([URL_INFORMADA, URL_INFORMADA + '/nextcloud', URL_INFORMADA.replace(/\/nextcloud$/, '')])];
+  // aceita a URL como estiver no segredo: raiz, com /nextcloud, ou copiada do navegador (…/index.php/apps/files/…)
+  let limpa = URL_INFORMADA.replace(/\/(index\.php|apps|remote\.php|login|status\.php).*$/i, '').replace(/\/+$/, '');
+  if (!/^https?:\/\//i.test(limpa)) limpa = 'https://' + limpa;
+  let origem = limpa; try { origem = new URL(limpa).origin; } catch {}
+  const candidatos = [...new Set([limpa, limpa + '/nextcloud', origem + '/nextcloud', origem])];
+  const motivos = [];
   for (const b of candidatos) {
-    try { const r = await fetchRetry(b + '/status.php', {}, 2); if (r.ok) { const j = await r.json(); if (j && j.installed) { console.log(`Nextcloud ${j.versionstring || ''} encontrado`); return b; } } } catch {}
+    try {
+      const r = await fetchRetry(b + '/status.php', { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; robo-usina-site)' } }, 2);
+      if (r.ok) { const j = await r.json(); if (j && j.installed) { console.log(`Nextcloud ${j.versionstring || ''} encontrado (${b.replace(/^https?:\/\//, '').split('/')[0]})`); return b; } }
+      motivos.push(`${b.replace(/^https?:\/\/[^/]+/, '') || '/'} -> HTTP ${r.status}`);
+    } catch (e) { motivos.push(`${b.replace(/^https?:\/\/[^/]+/, '') || '/'} -> ${e.message}`); }
   }
-  throw new Error('status.php não respondeu em nenhuma variação da NEXTCLOUD_URL');
+  throw new Error('status.php não respondeu em nenhuma variação da NEXTCLOUD_URL: ' + motivos.join('; '));
 }
 // 2) descobre o id interno do usuário (o caminho WebDAV usa o id, não o e-mail nem o nome)
 async function descobrirUsuario(base) {
