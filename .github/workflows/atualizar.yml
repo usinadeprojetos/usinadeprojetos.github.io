@@ -37,5 +37,6 @@ jobs:
         run: |
           git config user.name "robo-usina"
           git config user.email "robo@usina.local"
-          git add dados.js dados.json img/galeria
+          mkdir -p img/galeria
+          git add -A -- dados.js dados.json img/galeria
           if git diff --cached --quiet; then echo "Sem mudanças"; else git commit -m "Atualiza dados ($(date -u +%Y-%m-%d\ %H:%M) UTC)" && git push; fi
