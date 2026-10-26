@@ -38,7 +38,9 @@ async function descobrirBase() {
   let limpa = URL_INFORMADA.replace(/\/(index\.php|apps|remote\.php|login|status\.php).*$/i, '').replace(/\/+$/, '');
   if (!/^https?:\/\//i.test(limpa)) limpa = 'https://' + limpa;
   let origem = limpa; try { origem = new URL(limpa).origin; } catch {}
-  const candidatos = [...new Set([limpa, limpa + '/nextcloud', origem + '/nextcloud', origem])];
+  // último recurso: o endereço conhecido do Nextcloud da Usina (caso o segredo NEXTCLOUD_URL esteja com erro de digitação)
+  const URL_PADRAO = 'https://csct.com.br/nextcloud';
+  const candidatos = [...new Set([limpa, limpa + '/nextcloud', origem + '/nextcloud', origem, URL_PADRAO])];
   const motivos = [];
   for (const b of candidatos) {
     try {
