@@ -21,7 +21,9 @@ jobs:
         with:
           node-version: '20'
       - name: Ferramentas para gerar imagens (pdftoppm, convert)
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils imagemagick > /dev/null
+        run: |
+          command -v pdftoppm >/dev/null || sudo apt-get install -y -qq poppler-utils >/dev/null || { sudo apt-get update -qq; sudo apt-get install -y -qq poppler-utils >/dev/null; }
+          command -v convert >/dev/null || { sudo apt-get update -qq; sudo apt-get install -y -qq imagemagick >/dev/null; }
       - name: Ler ClickUp e regerar dados.js
         run: node robo/atualizar.mjs
         env:
