@@ -597,7 +597,7 @@ function start(D){
     [fmtBRL(D.convenio.valor_total), 'investidos no convênio', 'Itaipu + Conselho dos Lindeiros']
   ].map(([v,l,s]) => `<div class="kpi"><div class="v num">${esc(v)}</div><div class="l">${esc(l)}</div><div class="s">${esc(s)}</div></div>`).join('');
 
-  $('#timeline').innerHTML = D.cronologia.map(e => `<li class="${e.meta ? 'meta' : ''}"><span class="d">${esc(e.data.endsWith('-01-01') ? e.data.slice(0,4) : fmtD(e.data))}</span><b>${esc(e.titulo)}</b><span>${esc(e.texto)}</span></li>`).join('');
+  $('#timeline').innerHTML = [...D.cronologia].sort((a, b) => a.data.localeCompare(b.data)).map(e => `<li class="${e.meta ? 'meta' : ''}"><span class="d">${esc(e.data.endsWith('-01-01') ? e.data.slice(0,4) : fmtD(e.data))}</span><b>${esc(e.titulo)}</b><span>${esc(e.texto)}</span></li>`).join('');
   $('#press').innerHTML = (D.imprensa || []).map(n => `<li><span class="d">${esc(fmtD(n.data))}</span><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.titulo)}</a><span class="v">${esc(n.veiculo)}</span></li>`).join('');
 
   /* ---------- Mapa ---------- */
