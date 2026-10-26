@@ -6,19 +6,19 @@ Não precisa de servidor, banco de dados nem instalação — basta publicar a p
 Endereço oficial: **https://usinadeprojetos.github.io/** (o endereço antigo, mwengenhariaa.github.io/site, redireciona para cá).
 
 ## Forçar uma atualização agora
-Aba *Actions* → *Atualizar dados do ClickUp* → *Run workflow*. Em 1–2 minutos o site é republicado.
+Aba *Actions* → *Atualizar dados do ClickUp* → *Run workflow*. Em 2–4 minutos o site é republicado.
 
-## Atualizar à mão
-Substitua `dados.js` (e `dados.json`) e faça o commit. O GitHub Pages republica em cerca de um minuto.
+## Robôs de atualização (ClickUp + Nextcloud → site)
+Rodam todo dia às 22h (horário de Brasília) pelo agendamento em `.github/workflows/atualizar.yml`. Só leem as fontes; a única gravação é neste repositório.
 
-## Robô de atualização (ClickUp → site)
-`robo/atualizar.mjs` lê a lista da Usina no ClickUp pela API e regera `dados.js` com o andamento de cada disciplina.
-O agendamento está em `.github/workflows/atualizar.yml` (a cada 3 horas, ou pelo botão *Run workflow* na aba Actions).
+- `robo/atualizar.mjs` — lê a lista da Usina no ClickUp pela API e regera `dados.js` com o andamento de cada disciplina
+  (status, responsáveis, percentuais, data). Segredo: `CLICKUP_TOKEN`.
+- `robo/nextcloud.mjs` — lê o acervo em `/2_Prefeituras` do Nextcloud (WebDAV, só leitura). Para cada projeto com o campo
+  `nextcloud` conta os arquivos de projeto produzidos pela Usina (por tipo, com a data do último) e, para os que têm
+  `galeria_nextcloud`, monta a galeria: pranchas em PDF viram JPG (1ª página, 1600 px) e renders são redimensionados.
+  Segredos: `NEXTCLOUD_URL`, `NEXTCLOUD_USER`, `NEXTCLOUD_SENHA` (senha de aplicativo).
 
-Para ligar:
-1. No ClickUp: *Settings → Apps → API Token → Generate*.
-2. No GitHub: *Settings → Secrets and variables → Actions → New repository secret* — nome `CLICKUP_TOKEN`, valor = o token.
-3. Aba *Actions* → *Atualizar dados do ClickUp* → *Run workflow* para testar.
-
-Só os campos vindos do ClickUp mudam (disciplinas, status, responsáveis, percentuais e data). Projetos novos no ClickUp
-precisam ser cadastrados em `dados.js` (campo `clickup` com o id do cartão) para aparecerem no mapa e nas tabelas.
+Só os campos vindos das fontes mudam; municípios, descrições, valores, mapa, equipe, formalizações e financeiro ficam como estão.
+Projetos novos no ClickUp precisam ser cadastrados em `dados.js` (campo `clickup` com o id do cartão). Para pôr uma imagem
+nova na galeria, basta incluir o caminho do arquivo no Nextcloud em `galeria_nextcloud` do projeto — regra: só trabalho
+produzido pela Usina (pranchas, renders, 3D), nunca fotos de visitas nem referências enviadas pelas prefeituras.
