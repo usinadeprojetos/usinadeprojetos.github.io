@@ -1,0 +1,37 @@
+name: Prévia de pasta do Nextcloud
+
+on:
+  workflow_dispatch:
+    inputs:
+      pasta:
+        description: 'Pasta no Nextcloud (ex.: /2_Prefeituras/4_Guaíra/.../03_Imagens)'
+        required: true
+      max:
+        description: 'Máximo de imagens'
+        default: '20'
+
+permissions:
+  contents: read
+
+jobs:
+  previa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Baixar imagens da pasta (só leitura)
+        run: node robo/previa.mjs
+        env:
+          PASTA: ${{ inputs.pasta }}
+          MAX: ${{ inputs.max }}
+          NEXTCLOUD_URL: ${{ secrets.NEXTCLOUD_URL }}
+          NEXTCLOUD_USER: ${{ secrets.NEXTCLOUD_USER }}
+          NEXTCLOUD_SENHA: ${{ secrets.NEXTCLOUD_SENHA }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: previa
+          path: previa/
+          retention-days: 3
+          if-no-files-found: warn
