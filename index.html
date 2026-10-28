@@ -206,6 +206,9 @@ table.tbl td.c{text-align:center}
 .lightbox .x{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:999px;width:40px;height:40px;font-size:1.3rem;cursor:pointer}
 .lightbox .nav{display:flex;gap:8px;align-items:center}
 .lightbox .cnt{color:#fff;opacity:.8;font-size:.9rem;min-width:4.5em;text-align:center}
+.exp-btn{margin-left:auto;background:var(--brand-deep);color:#fff;border:0;border-radius:999px;padding:7px 14px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.exp-btn:hover{filter:brightness(1.1)}
+@media(max-width:600px){.exp-btn .t{display:none}.exp-btn{padding:7px 10px}}
 .lightbox .nav button{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:999px;padding:8px 16px;cursor:pointer}
 .popup-thumb{width:100%;height:120px;object-fit:cover;border-radius:6px;margin-top:8px;display:block}
 /* Indicadores físicos */
@@ -374,7 +377,7 @@ footer img{height:34px;width:auto;margin-right:16px;vertical-align:middle;opacit
       <a href="#financeiro">Impacto financeiro</a>
       <a href="#formalizacoes">Formalizações</a>
       <a href="#equipe">Equipe</a>
-      <button type="button" class="pres-btn" id="pres-on" title="Modo apresentação para TV e reuniões">▶ Apresentação</button>
+      <button type="button" class="exp-btn" id="btn-export" title="Exportar relatório de atividades (acesso restrito à coordenação)"><span class="i" aria-hidden="true">⬇</span><span class="t">Relatório</span></button>
     </nav>
   </div>
 </header>
@@ -845,7 +848,7 @@ function start(D){
   function presStep(){ if (presPaused) return; presIdx = (presIdx + 1) % secIds.length; document.getElementById(secIds[presIdx]).scrollIntoView({ behavior: 'smooth' }); $('#pres-status').textContent = `Apresentação · ${presIdx + 1}/${secIds.length}`; }
   function presOn(){ document.body.classList.add('apresenta'); presIdx = 0; presPaused = false; $('#pres-pause').textContent = 'Pausar'; $('#pres-status').textContent = 'Apresentação · 1/6'; window.scrollTo({ top: 0 }); clearInterval(presTimer); presTimer = setInterval(presStep, 25000); setTimeout(() => map.invalidateSize(), 350); }
   function presOff(){ document.body.classList.remove('apresenta'); clearInterval(presTimer); presTimer = null; setTimeout(() => map.invalidateSize(), 350); }
-  $('#pres-on').addEventListener('click', presOn);
+  const presBtn = $('#pres-on'); if (presBtn) presBtn.addEventListener('click', presOn);   // botão removido do menu (modo segue acessível por #apresentacao)
   $('#pres-off').addEventListener('click', presOff);
   $('#pres-pause').addEventListener('click', e => { presPaused = !presPaused; e.target.textContent = presPaused ? 'Continuar' : 'Pausar'; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('apresenta')) presOff(); });
@@ -861,6 +864,7 @@ if (window.DADOS) start(window.DADOS);
 else fetch('dados.json').then(r => r.json()).then(start).catch(() => start(null));
 })();
 </script>
+<script src="relatorio.js" defer></script>
 
 </body>
 </html>
