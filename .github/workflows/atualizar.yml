@@ -2,7 +2,7 @@ name: Atualizar dados do ClickUp
 
 on:
   schedule:
-    - cron: '0 1 * * *'      # todo dia às 22h (horário de Brasília = 01h UTC)
+    - cron: '7 1 * * *'      # todo dia às 22h07 (horário de Brasília = 01h07 UTC; fora da hora cheia, que o GitHub atrasa)
   workflow_dispatch:         # botão "Run workflow" na aba Actions
 
 permissions:
@@ -31,10 +31,12 @@ jobs:
           NEXTCLOUD_URL: ${{ secrets.NEXTCLOUD_URL }}
           NEXTCLOUD_USER: ${{ secrets.NEXTCLOUD_USER }}
           NEXTCLOUD_SENHA: ${{ secrets.NEXTCLOUD_SENHA }}
+      - name: Gravar retrato do dia (histórico para os relatórios)
+        run: node robo/historico.mjs
       - name: Publicar se houve mudança
         run: |
           git config user.name "robo-usina"
           git config user.email "robo@usina.local"
-          mkdir -p img/galeria
-          git add -A -- dados.js dados.json img/galeria
+          mkdir -p img/galeria historico
+          git add -A -- dados.js dados.json img/galeria historico
           if git diff --cached --quiet; then echo "Sem mudanças"; else git commit -m "Atualiza dados ($(date -u +%Y-%m-%d\ %H:%M) UTC)" && git push; fi
