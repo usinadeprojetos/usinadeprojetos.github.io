@@ -55,7 +55,7 @@ for (const m of todas.filter(t => !t.parent && /^munic/i.test(statusDe(t)))) {
     if (/^Reuni/i.test(c.name)) continue;
     const disciplinas = filhos(c.id).map(s => ({
       id: s.id, nome: limpa(s.name), grupo: grupo(s.name), status: mapStatus(statusDe(s)), status_clickup: statusDe(s),
-      responsaveis: nomes(s), prazo: data(s.due_date), atualizado: data(s.date_updated), url: s.url, notas: filhos(s.id).map(x => x.name)
+      responsaveis: nomes(s), prazo: data(s.due_date), atualizado: data(s.date_updated), criado_em: data(s.date_created), concluido_em: data(s.date_done || s.date_closed), url: s.url, notas: filhos(s.id).map(x => x.name)
     })).filter(d => d.grupo !== 'marco');
     projetosCU[c.id] = { id: c.id, nome: c.name, status_clickup: statusDe(c), atualizado: data(c.date_updated), url: c.url, responsaveis: nomes(c), disciplinas };
   }
