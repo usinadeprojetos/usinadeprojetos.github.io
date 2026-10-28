@@ -72,9 +72,9 @@ function fechar() { if (bg) { bg.remove(); bg = null; } }
 function caixa(html) { fechar(); bg = document.createElement('div'); bg.className = 'rel-bg'; bg.innerHTML = `<div class="rel-box" role="dialog" aria-modal="true"><button class="x" aria-label="Fechar">×</button>${html}</div>`; bg.addEventListener('click', e => { if (e.target === bg || e.target.classList.contains('x')) fechar(); }); document.body.appendChild(bg); return $('.rel-box', bg); }
 
 function telaLogin() {
-  const box = caixa(`<h3>Relatório de atividades</h3><p class="sub">Acesso restrito à coordenação da Usina. Use o e-mail e o celular cadastrados na seção Equipe.</p>
-    <form id="rel-login"><label>E-mail</label><input type="email" name="email" autocomplete="username" required placeholder="nome@exemplo.com">
-    <label>Celular</label><input type="tel" name="tel" autocomplete="current-password" required placeholder="(45) 9 9999-9999">
+  const box = caixa(`<h3>Relatório de atividades</h3><p class="sub">Acesso restrito à coordenação da Usina.</p>
+    <form id="rel-login"><label>Login</label><input type="text" name="email" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+    <label>Senha</label><input type="password" name="tel" autocomplete="current-password" required>
     <div class="err" id="rel-err"></div>
     <div class="acoes"><button type="button" class="btn s" data-x>Cancelar</button><button type="submit" class="btn p">Entrar</button></div></form>`);
   $('[data-x]', box).onclick = fechar;
@@ -87,7 +87,7 @@ function telaLogin() {
     try {
       const h = await sha256(f.email.value.trim().toLowerCase() + '|' + normTel(f.tel.value));
       const u = USUARIOS.find(x => x.h === h);
-      if (!u) { tentativas++; err.textContent = 'E-mail ou celular não conferem com a lista de acesso.'; btn.disabled = false; return; }
+      if (!u) { tentativas++; err.textContent = 'Login ou senha incorretos.'; btn.disabled = false; return; }
       sessionStorage.setItem('rel_user', JSON.stringify({ nome: u.nome, papel: u.papel }));
       telaForm();
     } catch (ex) { err.textContent = 'Não foi possível validar o acesso neste navegador (' + ex.message + ').'; btn.disabled = false; }
