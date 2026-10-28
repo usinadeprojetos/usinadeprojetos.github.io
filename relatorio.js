@@ -40,6 +40,11 @@ const css = `
 .rel-box .chips{display:flex;flex-wrap:wrap;gap:6px}
 .rel-box .chips button{border:1px solid var(--line,#cfd6dd);background:none;color:inherit;border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit;font-size:.86rem}
 .rel-box .chips button.on{background:var(--brand-deep,#0B5394);color:#fff;border-color:transparent}
+.rel-box .lista{max-height:200px;overflow:auto;border:1px solid var(--line,#cfd6dd);border-radius:8px;padding:4px 10px 8px;background:var(--surface-2,#fff)}
+.rel-box .lista label{display:flex;gap:8px;align-items:flex-start;font-weight:500;margin:0;padding:4px 0;font-size:.88rem;cursor:pointer}
+.rel-box .lista input{width:auto;margin:3px 0 0}
+.rel-box .lista small{color:var(--muted,#667)}
+.rel-box .lista .mun{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--brand-deep,#0B5394);margin:8px 0 2px;font-weight:700}
 .rel-box .opts label{display:flex;gap:8px;align-items:center;font-weight:500;margin:6px 0}
 .rel-box .opts input{width:auto;margin:0}
 .rel-box .acoes{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
@@ -98,35 +103,52 @@ function telaForm() {
     <div class="quem"><span>Acesso: <b>${esc(u.nome)}</b> · ${esc(u.papel)}</span><a id="rel-sair">sair</a></div>
     <label>Período</label><div class="chips" id="rel-chips"><button type="button" data-d="7">Últimos 7 dias</button><button type="button" data-d="15">Últimos 15 dias</button><button type="button" data-d="30">Últimos 30 dias</button><button type="button" data-d="0">Personalizado</button></div>
     <div class="row"><div><label>De</label><input type="date" id="rel-de"></div><div><label>Até</label><input type="date" id="rel-ate"></div></div>
-    <div class="row"><div><label>Município</label><select id="rel-mun"><option value="">Todos os municípios</option>${munComProj.map(m => `<option value="${esc(m.sigla)}">${esc(m.nome)}</option>`).join('')}</select></div>
-    <div><label>Projeto</label><select id="rel-proj"><option value="">Todos os projetos</option></select></div></div>
+    <label>Município</label><select id="rel-mun"><option value="">Todos os municípios</option>${munComProj.map(m => `<option value="${esc(m.sigla)}">${esc(m.nome)}</option>`).join('')}</select>
+    <label>Projetos <small style="font-weight:400">(marque um ou mais; nenhum marcado = todos)</small></label>
+    <input type="search" id="rel-busca" placeholder="filtrar pelo nome…" style="margin-bottom:6px">
+    <div class="lista" id="rel-proj"></div>
+    <div class="nota" id="rel-sel" style="margin-top:4px"></div>
     <label>Conteúdo</label><div class="opts">
       <label><input type="checkbox" id="rel-acont" checked> Acontecimentos do período (conclusões, formalizações, acervo, marcos)</label>
       <label><input type="checkbox" id="rel-disc" checked> Situação por disciplina</label>
       <label><input type="checkbox" id="rel-prazos" checked> Próximos prazos e atrasos</label>
-      <label><input type="checkbox" id="rel-img"> Imagens da galeria (só para um projeto)</label></div>
+      <label><input type="checkbox" id="rel-img"> Imagens da galeria (até 4 projetos selecionados)</label></div>
     <div class="err" id="rel-err"></div>
     <div class="acoes"><button type="button" class="btn s" id="rel-copiar">Copiar resumo (texto)</button><button type="button" class="btn p" id="rel-gerar">Gerar relatório</button></div>
     <p class="nota">O relatório abre em uma nova aba, pronto para imprimir ou salvar em PDF. Histórico diário disponível desde ${esc(fmtD(D.historico_desde || '2026-10-23'))}; antes disso o comparativo usa as datas do ClickUp.</p>`);
-  const de = $('#rel-de', box), ate = $('#rel-ate', box), mun = $('#rel-mun', box), proj = $('#rel-proj', box), chips = $('#rel-chips', box);
+  const de = $('#rel-de', box), ate = $('#rel-ate', box), mun = $('#rel-mun', box), proj = $('#rel-proj', box), chips = $('#rel-chips', box), busca = $('#rel-busca', box), selInfo = $('#rel-sel', box);
+  const sel = new Set(Array.isArray(salvo.slugs) ? salvo.slugs.filter(s => P.some(p => p.slug === s)) : []);   // projetos marcados
   const marcar = d => { [...chips.children].forEach(b => b.classList.toggle('on', b.dataset.d === String(d))); };
   const aplicarPeriodo = d => { ate.value = hoje(); de.value = addDias(hoje(), -(d - 1)); marcar(d); };
   chips.onclick = e => { const b = e.target.closest('button'); if (!b) return; const d = Number(b.dataset.d); if (d) aplicarPeriodo(d); else { marcar(0); de.focus(); } };
   de.onchange = ate.onchange = () => marcar(0);
-  const encherProjetos = () => { const sg = mun.value; const lista = P.filter(p => !sg || p.sigla === sg).sort((a, b) => a.sigla.localeCompare(b.sigla) || a.nome.localeCompare(b.nome)); proj.innerHTML = `<option value="">Todos os projetos${sg ? ' de ' + esc(MUN[sg].nome) : ''}</option>` + lista.map(p => `<option value="${esc(p.slug)}">${esc(p.sigla)} · ${esc(p.nome)}${p.n_itens ? '' : ' (sem ClickUp)'}</option>`).join(''); };
-  mun.onchange = () => { encherProjetos(); };
+  const resumoSel = () => { selInfo.textContent = sel.size ? `${sel.size} projeto(s) marcado(s): ${[...sel].map(s => (P.find(p => p.slug === s) || {}).sigla).join(', ')}` : 'Nenhum marcado = todos os projetos do município escolhido.'; };
+  const encherProjetos = () => {
+    const sg = mun.value, q = (busca.value || '').trim().toLowerCase();
+    const lista = P.filter(p => (!sg || p.sigla === sg) && (!q || (p.nome + ' ' + p.mun.nome + ' ' + p.sigla).toLowerCase().includes(q))).sort((a, b) => a.mun.nome.localeCompare(b.mun.nome) || a.nome.localeCompare(b.nome));
+    let html = '', ultimo = null;
+    for (const p of lista) {
+      if (p.mun.nome !== ultimo) { ultimo = p.mun.nome; html += `<div class="mun">${esc(p.mun.nome)}</div>`; }
+      html += `<label><input type="checkbox" value="${esc(p.slug)}"${sel.has(p.slug) ? ' checked' : ''}> <span>${esc(p.nome)}${p.n_itens ? '' : ' <small>(sem ClickUp)</small>'}${p.situacao === 'paralisado' ? ' <small>(paralisado)</small>' : ''}</span></label>`;
+    }
+    proj.innerHTML = html || '<div class="nota">Nenhum projeto encontrado.</div>';
+    resumoSel();
+  };
+  proj.addEventListener('change', e => { const c = e.target; if (c && c.type === 'checkbox') { if (c.checked) sel.add(c.value); else sel.delete(c.value); resumoSel(); } });
+  busca.oninput = encherProjetos;
+  mun.onchange = () => { const sg = mun.value; if (sg) [...sel].forEach(s => { const p = P.find(x => x.slug === s); if (!p || p.sigla !== sg) sel.delete(s); }); encherProjetos(); };
   // restaura escolhas anteriores
-  if (salvo.sigla && MUN[salvo.sigla]) mun.value = salvo.sigla; encherProjetos(); if (salvo.slug) proj.value = salvo.slug;
+  if (salvo.sigla && MUN[salvo.sigla]) mun.value = salvo.sigla; encherProjetos();
   if (salvo.dias) aplicarPeriodo(salvo.dias); else if (salvo.de && salvo.ate) { de.value = salvo.de; ate.value = salvo.ate; marcar(0); } else aplicarPeriodo(30);
   ['acont', 'disc', 'prazos', 'img'].forEach(k => { if (salvo[k] != null) $('#rel-' + k, box).checked = !!salvo[k]; });
   $('#rel-sair', box).onclick = () => { sessionStorage.removeItem('rel_user'); telaLogin(); };
   const opcoes = () => {
-    const o = { de: de.value, ate: ate.value, sigla: mun.value || null, slug: proj.value || null, incAcont: $('#rel-acont', box).checked, incDisc: $('#rel-disc', box).checked, incPrazos: $('#rel-prazos', box).checked, incImg: $('#rel-img', box).checked, usuario: u };
+    const o = { de: de.value, ate: ate.value, sigla: mun.value || null, slugs: [...sel], incAcont: $('#rel-acont', box).checked, incDisc: $('#rel-disc', box).checked, incPrazos: $('#rel-prazos', box).checked, incImg: $('#rel-img', box).checked, usuario: u };
     const chip = [...chips.children].find(b => b.classList.contains('on')); o.dias = chip && Number(chip.dataset.d) ? Number(chip.dataset.d) : 0;
     if (!o.de || !o.ate) throw new Error('Informe as duas datas.');
     if (o.de > o.ate) throw new Error('A data inicial é maior que a final.');
     if (nDias(o.de, o.ate) > 400) throw new Error('Período máximo: 400 dias.');
-    try { localStorage.setItem('rel_opts', JSON.stringify({ sigla: o.sigla, slug: o.slug, dias: o.dias, de: o.de, ate: o.ate, acont: o.incAcont, disc: o.incDisc, prazos: o.incPrazos, img: o.incImg })); } catch {}
+    try { localStorage.setItem('rel_opts', JSON.stringify({ sigla: o.sigla, slugs: o.slugs, dias: o.dias, de: o.de, ate: o.ate, acont: o.incAcont, disc: o.incDisc, prazos: o.incPrazos, img: o.incImg })); } catch {}
     return o;
   };
   $('#rel-gerar', box).onclick = async e => {
@@ -168,9 +190,12 @@ async function montar(o) {
   const fim = (ateEf === H || !dFim) ? retratoAoVivo() : await lerJson(`historico/${dFim}.json`).catch(() => retratoAoVivo());
   const baseAprox = ini && dIni > o.de;   // o retrato inicial é posterior ao início pedido
   const noPer = d => { d = dia(d); return d && d >= o.de && d <= ateEf; };
-  const escopo = P.filter(p => (!o.sigla || p.sigla === o.sigla) && (!o.slug || p.slug === o.slug));
+  const slugs = o.slugs || (o.slug ? [o.slug] : []);
+  const escopo = P.filter(p => (!o.sigla || p.sigla === o.sigla) && (!slugs.length || slugs.includes(p.slug)));
   if (!escopo.length) throw new Error('Nenhum projeto no filtro escolhido.');
-  if (o.slug && !o.sigla) o = Object.assign({}, o, { sigla: escopo[0].sigla });   // um projeto só: o município dele filtra formalizações, marcos etc.
+  const filtrado = !!(o.sigla || slugs.length);
+  const siglasEscopo = new Set(escopo.map(p => p.sigla));
+  const munOk = sg => !filtrado || siglasEscopo.has(sg);   // formalizações, marcos e metas só dos municípios dos projetos escolhidos
 
   const linhas = escopo.map(p => {
     const sI = ini && ini.projetos[p.slug], sF = fim.projetos[p.slug];
@@ -194,18 +219,18 @@ async function montar(o) {
   const rotulo = t => t.para === 'c' ? 'Concluída' : t.para === 'a' ? (t.mov ? 'Atualizada' : 'Iniciada') : t.para === 'g' ? 'Aguardando' : (t.nova ? 'Cadastrada' : t.mov ? 'Atualizada' : 'Reaberta');
   for (const l of linhas) for (const t of l.trans) ev.push({ data: dia(t.data), tipo: rotulo(t), texto: `${l.p.sigla} · ${l.p.nome}: ${t.x.nome}${t.x.responsaveis && t.x.responsaveis.length ? ' — ' + t.x.responsaveis.join(', ') : ''}` });
   for (const t of THREADS) {
-    const sg = siglaDe(t.municipio); if (o.sigla && sg !== o.sigla) continue;
+    if (!munOk(siglaDe(t.municipio))) continue;
     for (const m of t.mensagens || []) { if (!noPer(m.data) || /confirma..o de leitura/i.test(m.resumo || '')) continue; ev.push({ data: dia(m.data), tipo: m.direcao === 'enviado' ? 'Formalização' : 'Resposta', texto: `${t.municipio} — ${t.assunto}: ${m.resumo || ''}` }); }
   }
-  for (const c of D.cronologia || []) if (noPer(c.data) && (!o.sigla || new RegExp(MUN[o.sigla].nome.split(' ')[0], 'i').test(c.titulo + ' ' + c.texto))) ev.push({ data: c.data, tipo: 'Marco', texto: `${c.titulo} — ${c.texto}` });
-  if (!o.sigla) for (const n of D.imprensa || []) if (noPer(n.data)) ev.push({ data: n.data, tipo: 'Imprensa', texto: `${n.veiculo}: ${n.titulo}` });
-  for (const m of D.marcos_clickup || []) { const sg = (String(m.nome).match(/^([A-Z]{3})\./) || [])[1]; if (o.sigla && sg !== o.sigla) continue; if (noPer(m.atualizado)) ev.push({ data: dia(m.atualizado), tipo: 'ClickUp', texto: `${m.nome} (${STL[m.status] || m.status})` }); }
+  for (const c of D.cronologia || []) if (noPer(c.data) && (!filtrado || [...siglasEscopo].some(sg => new RegExp(MUN[sg].nome.split(' ')[0], 'i').test(c.titulo + ' ' + c.texto)))) ev.push({ data: c.data, tipo: 'Marco', texto: `${c.titulo} — ${c.texto}` });
+  if (!filtrado) for (const n of D.imprensa || []) if (noPer(n.data)) ev.push({ data: n.data, tipo: 'Imprensa', texto: `${n.veiculo}: ${n.titulo}` });
+  for (const m of D.marcos_clickup || []) { const sg = (String(m.nome).match(/^([A-Z]{3})\./) || [])[1]; if (!munOk(sg)) continue; if (noPer(m.atualizado)) ev.push({ data: dia(m.atualizado), tipo: 'ClickUp', texto: `${m.nome} (${STL[m.status] || m.status})` }); }
   for (const l of linhas) {
     const p = l.p;
     if (p.acervo && noPer(p.acervo.ultimo)) ev.push({ data: p.acervo.ultimo, tipo: 'Acervo', texto: `${p.sigla} · ${p.nome}: arquivos novos no Nextcloud — ${p.acervo.usina} arquivos de projeto, último: ${p.acervo.ultimo_arquivo || ''}` });
     for (const im of p.imagens || []) if (im.fonte && noPer(im.fonte.mod)) ev.push({ data: dia(im.fonte.mod), tipo: 'Galeria', texto: `${p.sigla} · ${p.nome}: ${im.legenda}` });
   }
-  for (const l of D.lotes_entrega || []) if (noPer(l.data) && (!o.sigla || (l.siglas || []).includes(o.sigla))) ev.push({ data: l.data, tipo: 'Meta', texto: `Meta de entrega do lote: ${(l.siglas || []).join(', ')}` });
+  for (const l of D.lotes_entrega || []) if (noPer(l.data) && (!filtrado || (l.siglas || []).some(s => siglasEscopo.has(s)))) ev.push({ data: l.data, tipo: 'Meta', texto: `Meta de entrega do lote: ${(l.siglas || []).join(', ')}` });
   ev.sort((a, b) => a.data.localeCompare(b.data) || a.tipo.localeCompare(b.tipo));
 
   // prazos
@@ -215,9 +240,9 @@ async function montar(o) {
     const item = { data: x.prazo, texto: `${l.p.sigla} · ${l.p.nome}: ${x.nome}`, resp: (x.responsaveis || []).join(', '), status: STL[x.status] };
     if (x.prazo > ateEf && x.prazo <= lim) prox.push(item); else if (x.prazo < ateEf) atras.push(item);
   }
-  for (const l of D.lotes_entrega || []) if (l.data > ateEf && l.data <= lim && (!o.sigla || (l.siglas || []).includes(o.sigla))) prox.push({ data: l.data, texto: `Meta de entrega do lote: ${(l.siglas || []).join(', ')}`, lote: true });
+  for (const l of D.lotes_entrega || []) if (l.data > ateEf && l.data <= lim && (!filtrado || (l.siglas || []).some(s => siglasEscopo.has(s)))) prox.push({ data: l.data, texto: `Meta de entrega do lote: ${(l.siglas || []).join(', ')}`, lote: true });
   prox.sort((a, b) => a.data.localeCompare(b.data)); atras.sort((a, b) => a.data.localeCompare(b.data));
-  const pendForm = THREADS.filter(t => t.status === 'aguardando_resposta' && (!o.sigla || siglaDe(t.municipio) === o.sigla));
+  const pendForm = THREADS.filter(t => t.status === 'aguardando_resposta' && munOk(siglaDe(t.municipio)));
 
   // resumo
   const comDados = linhas.filter(l => l.pctF != null);
@@ -233,11 +258,13 @@ async function montar(o) {
   const delta = (pctIm != null && pctFm != null) ? pctFm - pctIm : null;
   const sinal = v => (v > 0 ? '+' : '') + Math.round(v);
   const destaques = linhas.filter(l => l.pctI != null && l.pctF != null && l.pctF !== l.pctI).sort((a, b) => (b.pctF - b.pctI) - (a.pctF - a.pctI)).slice(0, 3);
-  const escopoTxt = `${o.sigla ? MUN[o.sigla].nome : 'Todos os municípios'} · ${o.slug ? escopo[0].nome : 'Todos os projetos'}`;
+  const munTxt = o.sigla ? MUN[o.sigla].nome : (slugs.length ? [...siglasEscopo].map(s => MUN[s].nome).join(', ') : 'Todos os municípios');
+  const projTxt = slugs.length ? (escopo.length === 1 ? escopo[0].nome : `${escopo.length} projetos: ${escopo.map(p => p.sigla + ' · ' + p.nome).join('; ')}`) : 'Todos os projetos';
+  const escopoTxt = `${munTxt} · ${projTxt}`;
   const periodoTxt = `${fmtD(o.de)} a ${fmtD(ateEf)} (${nDias(o.de, ateEf) + 1} dias)`;
   const baseTxt = ini ? `${baseAprox ? 'retrato mais antigo disponível, de ' : 'retrato de '}${fmtD(dIni)}` : 'sem retrato anterior (comparativo pelas datas do ClickUp)';
   const logo = (document.querySelector('header.top img') || {}).src || '';
-  const titulo = o.slug ? escopo[0].nome : o.sigla ? `Projetos de ${MUN[o.sigla].nome}` : 'Todos os projetos';
+  const titulo = escopo.length === 1 ? escopo[0].nome : o.sigla ? `Projetos de ${MUN[o.sigla].nome}` : slugs.length ? `${escopo.length} projetos selecionados` : 'Todos os projetos';
 
   // texto para WhatsApp / e-mail
   const texto = [
@@ -277,7 +304,7 @@ async function montar(o) {
   const evHtml = ev.length ? ev.map(e => `<div class="ev"><span class="d">${esc(fmtD(e.data))}</span><span class="t">${esc(e.tipo)}</span><span>${esc(e.texto)}</span></div>`).join('') : '<p class="obs">Nenhum acontecimento registrado no período para este escopo.</p>';
   let discHtml = '';
   if (o.incDisc) {
-    if (o.slug) {
+    if (escopo.length === 1) {
       const p = escopo[0];
       discHtml = (p.disciplinas && p.disciplinas.length) ? `<table><thead><tr><th>Grupo</th><th>Disciplina</th><th>Status</th><th>Responsáveis</th><th>Prazo</th><th>Última atualização</th></tr></thead><tbody>${p.disciplinas.slice().sort((a, b) => GR.findIndex(g => g[0] === a.grupo) - GR.findIndex(g => g[0] === b.grupo)).map(x => `<tr><td>${esc((GR.find(g => g[0] === x.grupo) || [])[1] || x.grupo)}</td><td>${esc(x.nome)}${x.notas && x.notas.length ? `<div class="obs">${esc(x.notas.join(' · '))}</div>` : ''}</td><td><i class="st ${COD[x.status]}"></i>${esc(STL[x.status] || x.status)}</td><td>${esc((x.responsaveis || []).join(', '))}</td><td>${esc(fmtD(x.prazo))}</td><td>${esc(fmtD(x.atualizado))}</td></tr>`).join('')}</tbody></table>` : '<p class="obs">Projeto sem acompanhamento de disciplinas no ClickUp.</p>';
     } else {
@@ -289,8 +316,9 @@ async function montar(o) {
   }
   const prazosHtml = o.incPrazos ? `${prox.length ? `<table><thead><tr><th>Data</th><th>O quê</th><th>Responsáveis</th><th>Status</th></tr></thead><tbody>${prox.map(x => `<tr><td>${esc(fmtD(x.data))}</td><td>${esc(x.texto)}</td><td>${esc(x.resp || '')}</td><td>${esc(x.lote ? 'meta do lote' : x.status || '')}</td></tr>`).join('')}</tbody></table>` : '<p class="obs">Nenhum prazo de disciplina ou meta de entrega nos 30 dias seguintes ao período.</p>'}${atras.length ? `<h3>Prazos vencidos sem conclusão (${atras.length})</h3><table><thead><tr><th>Prazo</th><th>O quê</th><th>Responsáveis</th><th>Status</th></tr></thead><tbody>${atras.slice(0, 25).map(x => `<tr><td>${esc(fmtD(x.data))}</td><td>${esc(x.texto)}</td><td>${esc(x.resp || '')}</td><td>${esc(x.status || '')}</td></tr>`).join('')}</tbody></table>${atras.length > 25 ? `<p class="obs">… e mais ${atras.length - 25}.</p>` : ''}` : ''}` : '';
   const pendHtml = pendForm.length ? `<table><thead><tr><th>Município</th><th>Assunto</th><th>Última atividade</th><th>Aguardando há</th></tr></thead><tbody>${pendForm.map(t => `<tr><td>${esc(t.municipio)}</td><td>${esc(t.assunto)}</td><td>${esc(fmtD(t.ultima_atividade))}</td><td>${t.ultima_atividade ? nDias(dia(t.ultima_atividade), ateEf) + ' dias' : ''}</td></tr>`).join('')}</tbody></table>` : '';
-  const imgHtml = (o.incImg && o.slug && escopo[0].imagens && escopo[0].imagens.length) ? `<div class="gal">${escopo[0].imagens.slice(0, 4).map(im => `<figure><img src="${esc(new URL(im.src, location.href).href)}" alt=""><figcaption>${esc(im.legenda)}</figcaption></figure>`).join('')}</div>` : '';
-  const nomeArq = `relatorio-usina-${o.sigla ? o.sigla.toLowerCase() + '-' : ''}${o.slug ? o.slug + '-' : ''}${o.de}-a-${ateEf}.html`;
+  const imgProjs = (o.incImg && escopo.length <= 4) ? escopo.filter(p => p.imagens && p.imagens.length) : [];
+  const imgHtml = imgProjs.map(p => `${escopo.length > 1 ? `<h3>${esc(p.sigla)} · ${esc(p.nome)}</h3>` : ''}<div class="gal">${p.imagens.slice(0, escopo.length === 1 ? 4 : 2).map(im => `<figure><img src="${esc(new URL(im.src, location.href).href)}" alt=""><figcaption>${esc(im.legenda)}</figcaption></figure>`).join('')}</div>`).join('');
+  const nomeArq = `relatorio-usina-${o.sigla ? o.sigla.toLowerCase() + '-' : ''}${slugs.length ? (slugs.length <= 3 ? slugs.join('+') + '-' : slugs.length + 'projetos-') : ''}${o.de}-a-${ateEf}.html`;
 
   const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Relatório de atividades — ${esc(titulo)} — ${esc(fmtDs(o.de))} a ${esc(fmtD(ateEf))}</title>
 <style>
@@ -345,8 +373,8 @@ ${o.incAcont ? `<h2>3. Acontecimentos do período</h2>${evHtml}` : ''}
 ${o.incDisc ? `<h2>${o.incAcont ? 4 : 3}. Situação por disciplina</h2>${discHtml}` : ''}
 ${o.incPrazos ? `<h2>${3 + (o.incAcont ? 1 : 0) + (o.incDisc ? 1 : 0)}. Próximos prazos (30 dias após o período)</h2>${prazosHtml}` : ''}
 ${pendHtml ? `<h2>Formalizações aguardando resposta da prefeitura</h2>${pendHtml}` : ''}
-${imgHtml ? `<h2>Imagens do projeto</h2>${imgHtml}` : ''}
-<footer>Relatório gerado automaticamente pelo site da Usina de Projetos (${esc(SITE.replace(/^https?:\/\//, ''))}) a partir do mural de tarefas (ClickUp), do acervo (Nextcloud) e do e-mail oficial. Convênio Itaipu 4500084088 — Conselho de Desenvolvimento dos Municípios Lindeiros ao Lago de Itaipu. Uso interno da coordenação.</footer>
+${imgHtml ? `<h2>Imagens ${escopo.length === 1 ? 'do projeto' : 'dos projetos'}</h2>${imgHtml}` : ''}
+<footer>Relatório gerado automaticamente pelo site da Usina de Projetos (${esc(SITE.replace(/^https?:\/\//, ''))}) a partir do mural de tarefas (ClickUp), do acervo (Nextcloud) e do e-mail oficial. Convênio Itaipu 4500084088 — Conselho de Desenvolvimento dos Municípios Lindeiros ao Lago de Itaipu. Uso interno da coordenação. Site e relatórios desenvolvidos por João Felipe Martins Werle.</footer>
 </main>
 <textarea id="resumo" hidden>${esc(texto)}</textarea>
 <scr` + `ipt>
@@ -362,10 +390,12 @@ const btn = document.getElementById('btn-export');
 if (btn) btn.addEventListener('click', () => (usuarioAtual() ? telaForm() : telaLogin()));
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && bg) fechar(); });
 
-// teste local (só em localhost): renderiza o relatório na própria página para conferência
-if (location.hash === '#rel-teste' && /^(127\.0\.0\.1|localhost)$/.test(location.hostname)) {
+// testes locais (só em localhost): #rel-form abre o formulário sem login; #rel-teste renderiza o relatório na própria página
+const localTeste = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+if (location.hash === '#rel-form' && localTeste) { sessionStorage.setItem('rel_user', JSON.stringify({ nome: 'Teste', papel: 'teste' })); telaForm(); }
+if (location.hash === '#rel-teste' && localTeste) {
   const q = new URLSearchParams(location.search);
-  montar({ de: q.get('de') || addDias(hoje(), -29), ate: q.get('ate') || hoje(), sigla: q.get('sigla') || null, slug: q.get('slug') || null, incAcont: true, incDisc: true, incPrazos: true, incImg: !!q.get('slug'), usuario: { nome: 'Teste', papel: 'teste' } })
+  montar({ de: q.get('de') || addDias(hoje(), -29), ate: q.get('ate') || hoje(), sigla: q.get('sigla') || null, slugs: q.get('slug') ? q.get('slug').split(',') : [], incAcont: true, incDisc: true, incPrazos: true, incImg: !!q.get('slug'), usuario: { nome: 'Teste', papel: 'teste' } })
     .then(r => {
       // ?so=<trecho do título> deixa visível só aquela seção (para conferir uma parte do relatório)
       const filtro = () => { const so = new URLSearchParams(location.search).get('so'); if (!so) return; let keep = false; [...document.querySelector('main').children].forEach(el => { if (el.tagName === 'H2') keep = el.textContent.includes(so); if (el.tagName !== 'HEADER' && !keep) el.style.display = 'none'; }); };
