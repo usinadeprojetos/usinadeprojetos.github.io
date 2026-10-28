@@ -282,7 +282,9 @@ async function montar(o) {
       discHtml = (p.disciplinas && p.disciplinas.length) ? `<table><thead><tr><th>Grupo</th><th>Disciplina</th><th>Status</th><th>Responsáveis</th><th>Prazo</th><th>Última atualização</th></tr></thead><tbody>${p.disciplinas.slice().sort((a, b) => GR.findIndex(g => g[0] === a.grupo) - GR.findIndex(g => g[0] === b.grupo)).map(x => `<tr><td>${esc((GR.find(g => g[0] === x.grupo) || [])[1] || x.grupo)}</td><td>${esc(x.nome)}${x.notas && x.notas.length ? `<div class="obs">${esc(x.notas.join(' · '))}</div>` : ''}</td><td><i class="st ${COD[x.status]}"></i>${esc(STL[x.status] || x.status)}</td><td>${esc((x.responsaveis || []).join(', '))}</td><td>${esc(fmtD(x.prazo))}</td><td>${esc(fmtD(x.atualizado))}</td></tr>`).join('')}</tbody></table>` : '<p class="obs">Projeto sem acompanhamento de disciplinas no ClickUp.</p>';
     } else {
       const comDisc = linhas.filter(l => l.p.disciplinas && l.p.disciplinas.length);
-      discHtml = comDisc.length ? `<table class="mx"><thead><tr><th>Projeto</th>${GR.map(g => `<th class="num">${esc(g[1])}</th>`).join('')}<th class="num">Total</th></tr></thead><tbody>${comDisc.map(l => `<tr><td>${esc(l.p.sigla)} · ${esc(l.p.nome)}</td>${GR.map(g => { const it = l.p.disciplinas.filter(x => x.grupo === g[0]); if (!it.length) return '<td class="num mudo">–</td>'; const c = it.filter(x => x.status === 'concluido').length, a = it.filter(x => x.status === 'andamento').length; return `<td class="num">${c}/${it.length}${a ? `<small> (${a} em des.)</small>` : ''}</td>`; }).join('')}<td class="num"><b>${l.p.n_concluidos}/${l.p.n_itens}</b></td></tr>`).join('')}</tbody></table><p class="obs">Em cada célula: disciplinas concluídas / total do grupo (e quantas estão em desenvolvimento).</p>` : '';
+      const ABR = { levantamentos: 'Levant.', arquitetura: 'Arquit.', urbanismo: 'Urban.', estrutura: 'Estrut.', eletrico: 'Elétr.', hidrossanitario: 'Hidro.', viaria: 'Viária', pcip: 'PCIP', orcamento: 'Orçam.', outros: 'Outros' };
+      const grUsados = GR.filter(g => comDisc.some(l => l.p.disciplinas.some(x => x.grupo === g[0])));   // só colunas com alguma disciplina
+      discHtml = comDisc.length ? `<div class="wrap"><table class="mx"><thead><tr><th>Projeto</th>${grUsados.map(g => `<th class="num" title="${esc(g[1])}">${esc(ABR[g[0]] || g[1])}</th>`).join('')}<th class="num">Total</th></tr></thead><tbody>${comDisc.map(l => `<tr><td>${esc(l.p.sigla)} · ${esc(l.p.nome)}</td>${grUsados.map(g => { const it = l.p.disciplinas.filter(x => x.grupo === g[0]); if (!it.length) return '<td class="num mudo">–</td>'; const c = it.filter(x => x.status === 'concluido').length, a = it.filter(x => x.status === 'andamento').length; return `<td class="num">${c}/${it.length}${a ? `<small>${a} em des.</small>` : ''}</td>`; }).join('')}<td class="num"><b>${l.p.n_concluidos}/${l.p.n_itens}</b></td></tr>`).join('')}</tbody></table></div><p class="obs">Em cada célula: disciplinas concluídas / total do grupo (e quantas estão em desenvolvimento). Levant. = levantamentos; Arquit. = arquitetura; Urban. = urbanismo; Estrut. = estrutura; Elétr. = elétrico; Hidro. = hidrossanitário; Orçam. = orçamento.</p>` : '';
     }
   }
   const prazosHtml = o.incPrazos ? `${prox.length ? `<table><thead><tr><th>Data</th><th>O quê</th><th>Responsáveis</th><th>Status</th></tr></thead><tbody>${prox.map(x => `<tr><td>${esc(fmtD(x.data))}</td><td>${esc(x.texto)}</td><td>${esc(x.resp || '')}</td><td>${esc(x.lote ? 'meta do lote' : x.status || '')}</td></tr>`).join('')}</tbody></table>` : '<p class="obs">Nenhum prazo de disciplina ou meta de entrega nos 30 dias seguintes ao período.</p>'}${atras.length ? `<h3>Prazos vencidos sem conclusão (${atras.length})</h3><table><thead><tr><th>Prazo</th><th>O quê</th><th>Responsáveis</th><th>Status</th></tr></thead><tbody>${atras.slice(0, 25).map(x => `<tr><td>${esc(fmtD(x.data))}</td><td>${esc(x.texto)}</td><td>${esc(x.resp || '')}</td><td>${esc(x.status || '')}</td></tr>`).join('')}</tbody></table>${atras.length > 25 ? `<p class="obs">… e mais ${atras.length - 25}.</p>` : ''}` : ''}` : '';
@@ -321,12 +323,18 @@ tr.mudo td,td.mudo{color:#99a}
 .st{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle;background:#c7ced6}
 .st.c{background:#1b7f3b}.st.a{background:#e0a100}.st.g{background:#7a8ba0}
 .obs{font-size:.82rem;color:#667}
-table.mx td,table.mx th{padding:4px 5px;font-size:.8rem}
+.wrap{overflow-x:auto}
+table.mx{table-layout:fixed;font-size:.76rem}
+table.mx td,table.mx th{padding:4px 3px;overflow-wrap:anywhere}
+table.mx th:first-child,table.mx td:first-child{width:25%}
+table.mx th.num{white-space:normal;font-size:.64rem;letter-spacing:0}
+table.mx td.num{white-space:normal}
+table.mx small{display:block;font-size:.64rem;color:#667;line-height:1.2}
 .gal{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
 .gal figure{margin:0}.gal img{width:100%;border:1px solid #e3e8ee;border-radius:6px}.gal figcaption{font-size:.78rem;color:#556;margin-top:3px}
 footer{margin-top:28px;border-top:1px solid #e3e8ee;padding-top:8px;font-size:.76rem;color:#667}
 @media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}main{padding:16px}.ev{grid-template-columns:70px 1fr}.ev .t{grid-column:2}}
-@media print{.tb{display:none}body{background:#fff}main{box-shadow:none;margin:0;padding:0;max-width:none}body{font-size:10.2pt}.kpis{grid-template-columns:repeat(4,1fr)}h2{margin-top:16px}a{color:inherit;text-decoration:none}}
+@media print{.tb{display:none}body{background:#fff}main{box-shadow:none;margin:0;padding:0;max-width:none}body{font-size:10.2pt}.kpis{grid-template-columns:repeat(4,1fr)}h2{margin-top:16px}a{color:inherit;text-decoration:none}table.mx{font-size:7.4pt}table.mx th.num,table.mx small{font-size:6.4pt}.wrap{overflow:visible}}
 </style></head><body>
 <div class="tb"><button id="pr">Imprimir / salvar em PDF</button><button id="dl">Baixar HTML</button><button id="cp">Copiar resumo (texto)</button><span class="dica">Na impressão, escolha "Salvar como PDF". Documento de uso interno.</span></div>
 <main>
@@ -358,7 +366,12 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && bg) fechar
 if (location.hash === '#rel-teste' && /^(127\.0\.0\.1|localhost)$/.test(location.hostname)) {
   const q = new URLSearchParams(location.search);
   montar({ de: q.get('de') || addDias(hoje(), -29), ate: q.get('ate') || hoje(), sigla: q.get('sigla') || null, slug: q.get('slug') || null, incAcont: true, incDisc: true, incPrazos: true, incImg: !!q.get('slug'), usuario: { nome: 'Teste', papel: 'teste' } })
-    .then(r => { document.open(); document.write(r.html); document.close(); })
+    .then(r => {
+      // ?so=<trecho do título> deixa visível só aquela seção (para conferir uma parte do relatório)
+      const filtro = () => { const so = new URLSearchParams(location.search).get('so'); if (!so) return; let keep = false; [...document.querySelector('main').children].forEach(el => { if (el.tagName === 'H2') keep = el.textContent.includes(so); if (el.tagName !== 'HEADER' && !keep) el.style.display = 'none'; }); };
+      const html = r.html.replace('</body>', '<scr' + 'ipt>(' + filtro.toString() + ')()</scr' + 'ipt></body>');
+      document.open(); document.write(html); document.close();
+    })
     .catch(e => { document.body.innerHTML = '<pre style="color:#c00;padding:20px">REL_ERRO ' + esc(e.stack || e.message) + '</pre>'; });
 }
 })();
