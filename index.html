@@ -92,7 +92,9 @@ nav.menu a:hover,nav.menu a.on{color:var(--brand-ink);background:var(--brand-sof
 @media(max-width:720px){.wordmark{display:none}.top .wrap{gap:10px}}
 
 /* Seções */
-section.sec{padding-block:56px;border-bottom:1px solid var(--line)}
+section.sec{padding-block:56px;border-bottom:1px solid var(--line);scroll-margin-top:calc(var(--topo-h,72px) + env(safe-area-inset-top,0px) - 24px)}
+#inicio{scroll-margin-top:100vh}
+body.apresenta section.sec{scroll-margin-top:0}
 section.sec:last-of-type{border-bottom:0}
 .sec-head{display:grid;grid-template-columns:4px 1fr;gap:18px;align-items:start;margin-bottom:28px}
 .sec-head .rail{width:4px;background:var(--brand);border-radius:2px;align-self:stretch}
@@ -856,6 +858,11 @@ function start(D){
   $('#pres-pause').addEventListener('click', e => { presPaused = !presPaused; e.target.textContent = presPaused ? 'Continuar' : 'Pausar'; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('apresenta')) presOff(); });
   if (location.hash === '#apresentacao') presOn();
+
+  /* altura real do cabeçalho fixo → âncoras do menu param logo abaixo dele */
+  const topo = document.querySelector('.top');
+  const medeTopo = () => document.documentElement.style.setProperty('--topo-h', topo.offsetHeight + 'px');
+  medeTopo(); if ('ResizeObserver' in window) new ResizeObserver(medeTopo).observe(topo); else addEventListener('resize', medeTopo);
 
   /* nav ativa */
   const links = [...document.querySelectorAll('nav.menu a')];
