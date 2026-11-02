@@ -237,6 +237,7 @@ for (const p of dados.projetos) {
 }
 
 dados.atualizado_nextcloud = hoje;
+dados.atualizado_nextcloud_iso = new Date().toISOString();   // instante exato (UTC); o site mostra no horário de Brasília
 const json = JSON.stringify(dados);
 await fs.writeFile('dados.json', json);
 await fs.writeFile('dados.js', 'window.DADOS = ' + json + ';');
