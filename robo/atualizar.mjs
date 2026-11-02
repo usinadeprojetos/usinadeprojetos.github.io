@@ -78,6 +78,7 @@ for (const p of dados.projetos) {
 }
 dados.marcos_clickup = todas.filter(t => !t.parent && !/^munic/i.test(statusDe(t))).map(t => ({ id: t.id, nome: t.name, status: mapStatus(statusDe(t)), atualizado: data(t.date_updated), url: t.url, filhos: filhos(t.id).map(x => x.name) }));
 dados.atualizado_em = new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);   // data no horário de Brasília (o runner está em UTC)
+dados.atualizado_clickup_iso = new Date().toISOString();   // instante exato (UTC); o site mostra no horário de Brasília
 const json = JSON.stringify(dados);
 await fs.writeFile('dados.json', json);
 await fs.writeFile('dados.js', 'window.DADOS = ' + json + ';');
