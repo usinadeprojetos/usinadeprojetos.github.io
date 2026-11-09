@@ -49,4 +49,8 @@ jobs:
           git config user.email "robo@usina.local"
           mkdir -p img/galeria historico nextcloud
           git add -A -- dados.js dados.json img/galeria historico nextcloud
-          if git diff --cached --quiet; then echo "Sem mudanças"; else git commit -m "Atualiza dados ($(date -u +%Y-%m-%d\ %H:%M) UTC)" && git push; fi
+          if git diff --cached --quiet; then echo "Sem mudanças"; exit 0; fi
+          git commit -m "Atualiza dados ($(date -u +%Y-%m-%d\ %H:%M) UTC)"
+          # alguém pode ter publicado durante a execução (os dois computadores do usuário): junta antes de enviar
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && exit 0; sleep 5; done
+          exit 1
