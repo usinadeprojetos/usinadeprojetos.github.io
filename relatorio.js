@@ -261,8 +261,7 @@ function eixoMeses(x, A0, A1, y0, y1) {
   return s;
 }
 // Gantt: uma linha por projeto (ou por disciplina, quando o relatório é de um projeto só)
-function svgGantt(linhas, o, ateEf, fim) {
-  const unico = linhas.length === 1;
+function svgGantt(linhas, o, ateEf, fim, unico) {
   const itens = [];
   if (unico) {
     const l = linhas[0], sF = fim.projetos[l.p.slug];
@@ -533,7 +532,7 @@ async function montar(o) {
   // gráficos de evolução
   let grafHtml = '';
   if (o.incGraf !== false && comDados.length) {
-    const gantt = svgGantt(comDados, o, ateEf, fim);
+    const gantt = svgGantt(comDados, o, ateEf, fim, escopo.length === 1);
     const pts = [];
     for (let d = '2026-08-16'; d < ateEf; d = addDias(d, 7)) pts.push(d);
     pts.push(ateEf);
@@ -562,7 +561,7 @@ async function montar(o) {
       for (const a of ncPer) { const sg = ncSigla(a[0]) || '?', k = sg + '|' + pastaDe(a); if (!grupos.has(k)) grupos.set(k, { sg, pasta: pastaDe(a), arr: [] }); grupos.get(k).arr.push(a); }
       const gs = [...grupos.values()].sort((a, b) => nomeMun(a.sg === '?' ? null : a.sg).localeCompare(nomeMun(b.sg === '?' ? null : b.sg)) || b.arr.length - a.arr.length);
       const nomeArqNC = a => String(a[0]).split('/').pop();
-      ncHtml = `<table><thead><tr><th>Município</th><th>Pasta / projeto</th><th class="num">Arquivos</th><th class="num">Da Usina</th><th>Tipos</th><th>Exemplos (mais recentes)</th></tr></thead><tbody>${gs.map(g => { const rec = g.arr.slice().sort((a, b) => b[1].localeCompare(a[1])); return `<tr><td>${esc(nomeMun(g.sg === '?' ? null : g.sg))}</td><td>${esc(g.pasta)}</td><td class="num"><b>${g.arr.length}</b></td><td class="num">${g.arr.filter(a => !a[4]).length}</td><td>${esc(tiposTxt(g.arr))}</td><td class="obs">${esc(rec.slice(0, 4).map(nomeArqNC).join(' · '))}${rec.length > 4 ? ' …' : ''}</td></tr>`; }).join('')}</tbody></table>`;
+      ncHtml = `<table class="nc"><colgroup><col style="width:13%"><col style="width:25%"><col style="width:8%"><col style="width:8%"><col style="width:15%"><col style="width:31%"></colgroup><thead><tr><th>Município</th><th>Pasta / projeto</th><th class="num">Arquivos</th><th class="num">Da Usina</th><th>Tipos</th><th>Exemplos (mais recentes)</th></tr></thead><tbody>${gs.map(g => { const rec = g.arr.slice().sort((a, b) => b[1].localeCompare(a[1])); return `<tr><td>${esc(nomeMun(g.sg === '?' ? null : g.sg))}</td><td>${esc(g.pasta)}</td><td class="num"><b>${g.arr.length}</b></td><td class="num">${g.arr.filter(a => !a[4]).length}</td><td>${esc(tiposTxt(g.arr))}</td><td class="obs">${esc(rec.slice(0, 3).map(n => corta(nomeArqNC(n), 48)).join(' · '))}${rec.length > 3 ? ' …' : ''}</td></tr>`; }).join('')}</tbody></table>`;
     }
     ncHtml += `<p class="obs">Fonte: Nextcloud da Usina, pasta /2_Prefeituras (somente leitura), lida em ${esc(fmtD(NC.lido_em))}. Data considerada: ${NC.data_por === 'upload_time' ? 'inserção do arquivo no servidor (quando o Nextcloud não registra a inserção, a data de modificação)' : 'data de modificação do arquivo'}. "Da Usina" exclui pastas de material recebido das prefeituras (documentos, fotos, levantamentos, atas). Arquivos apagados ou substituídos depois não aparecem.</p>`;
   }
@@ -574,9 +573,16 @@ async function montar(o) {
   if (NC) sec('Arquivos inseridos no Nextcloud no período', ncHtml);
   if (o.incDisc) sec(`Situação por disciplina em ${fmtD(ateEf)}`, discHtml);
   if (o.incPrazos) sec('Próximos prazos (30 dias após o período)', prazosHtml);
-  const nomeArq = `relatorio-usina-${o.sigla ? o.sigla.toLowerCase() + '-' : ''}${slugs.length ? (slugs.length <= 3 ? slugs.join('+') + '-' : slugs.length + 'projetos-') : ''}${o.de}-a-${ateEf}.html`;
+  // nome sugerido ao salvar (PDF pelo título da página, HTML pelo download): quinzena ou período + escopo
+  const dmy = s => s.slice(8, 10) + '-' + s.slice(5, 7) + '-' + s.slice(0, 4), dm = s => s.slice(8, 10) + '-' + s.slice(5, 7);
+  const perNome = qz
+    ? `${qz.de.slice(8) === '01' ? '1ª' : '2ª'} quinzena ${MES[Number(qz.de.slice(5, 7)) - 1]}-${qz.de.slice(0, 4)} (${dm(o.de)} a ${dm(ateEf)}${ateEf < o.ate ? ', parcial' : ''})`
+    : `${dmy(o.de)} a ${dmy(ateEf)}`;
+  const escNome = slugs.length ? (escopo.length === 1 ? `${escopo[0].sigla} ${escopo[0].nome}` : `${escopo.length} projetos`) : o.sigla ? MUN[o.sigla].nome : '';
+  const nomeBase = `Relatório Usina de Projetos - ${perNome}${escNome ? ' - ' + escNome : ''}`.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 150);
+  const nomeArq = nomeBase + '.html';
 
-  const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Relatório de atividades — ${esc(titulo)} — ${esc(fmtDs(o.de))} a ${esc(fmtD(ateEf))}</title>
+  const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${esc(nomeBase)}</title>
 <style>
 @page{size:A4;margin:14mm 13mm 16mm}
 body{font:11pt/1.45 'Segoe UI',system-ui,-apple-system,sans-serif;color:#17202a;margin:0;background:#f4f6f8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -621,6 +627,10 @@ table.mx small{display:block;font-size:.64rem;color:#667;line-height:1.2}
 .qz{display:inline-block;font-size:.8rem;background:#00AAF2;color:#fff;border-radius:999px;padding:2px 10px;vertical-align:middle;margin-left:6px}
 .aviso{font-size:.8rem;background:#fff8e1;border:1px solid #f0d68a;border-radius:8px;padding:8px 10px;color:#5b4a12;margin:10px 0 0}
 h3{break-after:avoid}
+table.nc{table-layout:fixed;font-size:.8rem}
+table.nc td{overflow-wrap:anywhere}
+table.nc td.obs{font-size:.74rem}
+table.nc th.num{white-space:normal}
 .gal{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
 .gal figure{margin:0}.gal img{width:100%;border:1px solid #e3e8ee;border-radius:6px}.gal figcaption{font-size:.78rem;color:#556;margin-top:3px}
 footer{margin-top:28px;border-top:1px solid #e3e8ee;padding-top:8px;font-size:.76rem;color:#667}
