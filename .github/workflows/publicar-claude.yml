@@ -1,0 +1,40 @@
+name: Publicar alterações das sessões do Claude
+
+# As sessões do Claude Code na nuvem (claude.ai/code, inclusive pelo celular) costumam enviar para um ramo claude/...
+# O Pages só publica o main: este workflow junta o ramo no main na hora, sem pull request.
+on:
+  push:
+    branches: ['claude/**']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atualizar-site        # mesma fila do robô diário: nunca gravam ao mesmo tempo
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Juntar o ramo no main e publicar
+        env:
+          RAMO: ${{ github.ref_name }}
+        run: |
+          git config user.name "robo-usina"
+          git config user.email "robo@usina.local"
+          for i in 1 2 3; do
+            git fetch origin main "$RAMO"
+            git checkout -B main origin/main
+            if ! git merge --no-edit -m "Publica $RAMO" "origin/$RAMO"; then
+              echo "::error::Conflito ao juntar $RAMO no main. Na sessão: git merge origin/main, resolver e enviar de novo."
+              exit 1
+            fi
+            if git push origin HEAD:main; then echo "Publicado: $RAMO -> main"; exit 0; fi
+            sleep 5
+          done
+          exit 1
