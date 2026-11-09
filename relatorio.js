@@ -101,8 +101,8 @@ function telaForm() {
   const munComProj = (D.municipios || []).filter(m => P.some(p => p.sigla === m.sigla)).sort((a, b) => a.nome.localeCompare(b.nome));
   const box = caixa(`<h3>Relatório de atividades</h3>
     <div class="quem"><span>Acesso: <b>${esc(u.nome)}</b> · ${esc(u.papel)}</span><a id="rel-sair">sair</a></div>
-    <label>Período</label><div class="chips" id="rel-chips"><button type="button" data-d="7">Últimos 7 dias</button><button type="button" data-d="15">Últimos 15 dias</button><button type="button" data-d="30">Últimos 30 dias</button><button type="button" data-d="0">Personalizado</button></div>
-    <label>Quinzena <small style="font-weight:400">(relatórios quinzenais desde o início do ClickUp)</small></label><select id="rel-quinz"><option value="">— escolher uma quinzena —</option>${quinzenas().slice().reverse().map(q => `<option value="${q.de}|${q.ate}">${esc(rotQuinz(q))} (${fmtDs(q.de)} a ${fmtDs(q.ate)})${q.ate > hoje() ? ' — em andamento' : ''}</option>`).join('')}</select>
+    <label>Período</label><div class="chips" id="rel-chips"><button type="button" data-d="7">Últimos 7 dias</button><button type="button" data-d="15">Últimos 15 dias</button><button type="button" data-d="30">Últimos 30 dias</button><button type="button" data-d="q">Quinzenas</button><button type="button" data-d="0">Personalizado</button></div>
+    <div id="rel-qbox" hidden><label>Quinzena <small style="font-weight:400">(1 a 15 e 16 ao fim do mês, desde o início do ClickUp)</small></label><select id="rel-quinz">${quinzenas().slice().reverse().map(q => `<option value="${q.de}|${q.ate}">${esc(rotQuinz(q))} (${fmtDs(q.de)} a ${fmtDs(q.ate)})${q.ate > hoje() ? ' — em andamento' : ''}</option>`).join('')}</select></div>
     <div class="row"><div><label>De</label><input type="date" id="rel-de"></div><div><label>Até</label><input type="date" id="rel-ate"></div></div>
     <label>Município</label><select id="rel-mun"><option value="">Todos os municípios</option>${munComProj.map(m => `<option value="${esc(m.sigla)}">${esc(m.nome)}</option>`).join('')}</select>
     <label>Projetos <small style="font-weight:400">(marque um ou mais; nenhum marcado = todos)</small></label>
@@ -121,12 +121,22 @@ function telaForm() {
     <p class="nota">O relatório abre em uma nova aba, pronto para imprimir ou salvar em PDF. Histórico diário disponível desde ${esc(fmtD(D.historico_desde || '2026-10-23'))}; antes disso o comparativo usa as datas do ClickUp.</p>`);
   const de = $('#rel-de', box), ate = $('#rel-ate', box), mun = $('#rel-mun', box), proj = $('#rel-proj', box), chips = $('#rel-chips', box), busca = $('#rel-busca', box), selInfo = $('#rel-sel', box);
   const sel = new Set(Array.isArray(salvo.slugs) ? salvo.slugs.filter(s => P.some(p => p.slug === s)) : []);   // projetos marcados
-  const quinz = $('#rel-quinz', box);
-  const marcar = d => { [...chips.children].forEach(b => b.classList.toggle('on', b.dataset.d === String(d))); if (d) quinz.value = ''; };
+  const quinz = $('#rel-quinz', box), qbox = $('#rel-qbox', box);
+  const marcar = d => { [...chips.children].forEach(b => b.classList.toggle('on', b.dataset.d === String(d))); qbox.hidden = d !== 'q'; };
   const aplicarPeriodo = d => { ate.value = hoje(); de.value = addDias(hoje(), -(d - 1)); marcar(d); };
-  chips.onclick = e => { const b = e.target.closest('button'); if (!b) return; const d = Number(b.dataset.d); if (d) aplicarPeriodo(d); else { marcar(0); de.focus(); } };
-  de.onchange = ate.onchange = () => { marcar(0); quinz.value = ''; };
-  quinz.onchange = () => { if (!quinz.value) return; const [a, b] = quinz.value.split('|'); de.value = a; ate.value = b; marcar(0); };
+  const aplicarQuinz = () => { const [a, b] = quinz.value.split('|'); de.value = a; ate.value = b; };
+  chips.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.d === 'q') {   // abre a lista; sugere a última quinzena já encerrada
+      marcar('q');
+      if (![...quinz.options].some(op => op.value === `${de.value}|${ate.value}`)) { const fechada = [...quinz.options].find(op => op.value.split('|')[1] < hoje()); quinz.value = (fechada || quinz.options[0]).value; }
+      else quinz.value = `${de.value}|${ate.value}`;
+      aplicarQuinz(); quinz.focus(); return;
+    }
+    const d = Number(b.dataset.d); if (d) aplicarPeriodo(d); else { marcar(0); de.focus(); }
+  };
+  de.onchange = ate.onchange = () => marcar(0);
+  quinz.onchange = aplicarQuinz;
   const resumoSel = () => { selInfo.textContent = sel.size ? `${sel.size} projeto(s) marcado(s): ${[...sel].map(s => (P.find(p => p.slug === s) || {}).sigla).join(', ')}` : 'Nenhum marcado = todos os projetos do município escolhido.'; };
   const encherProjetos = () => {
     const sg = mun.value, q = (busca.value || '').trim().toLowerCase();
@@ -146,15 +156,15 @@ function telaForm() {
   if (salvo.sigla && MUN[salvo.sigla]) mun.value = salvo.sigla; encherProjetos();
   if (salvo.dias) aplicarPeriodo(salvo.dias); else if (salvo.de && salvo.ate) { de.value = salvo.de; ate.value = salvo.ate; marcar(0); } else aplicarPeriodo(30);
   ['graf', 'nc', 'acont', 'disc', 'prazos', 'img'].forEach(k => { if (salvo[k] != null) $('#rel-' + k, box).checked = !!salvo[k]; });
-  if (de.value && ate.value && [...quinz.options].some(op => op.value === `${de.value}|${ate.value}`)) quinz.value = `${de.value}|${ate.value}`;
+  if (salvo.quinz && [...quinz.options].some(op => op.value === `${de.value}|${ate.value}`)) { quinz.value = `${de.value}|${ate.value}`; marcar('q'); }
   $('#rel-sair', box).onclick = () => { sessionStorage.removeItem('rel_user'); telaLogin(); };
   const opcoes = () => {
     const o = { de: de.value, ate: ate.value, sigla: mun.value || null, slugs: [...sel], incGraf: $('#rel-graf', box).checked, incNC: $('#rel-nc', box).checked, incAcont: $('#rel-acont', box).checked, incDisc: $('#rel-disc', box).checked, incPrazos: $('#rel-prazos', box).checked, incImg: $('#rel-img', box).checked, usuario: u };
-    const chip = [...chips.children].find(b => b.classList.contains('on')); o.dias = chip && Number(chip.dataset.d) ? Number(chip.dataset.d) : 0;
+    const chip = [...chips.children].find(b => b.classList.contains('on')); o.dias = chip && Number(chip.dataset.d) ? Number(chip.dataset.d) : 0; o.quinz = !!(chip && chip.dataset.d === 'q');
     if (!o.de || !o.ate) throw new Error('Informe as duas datas.');
     if (o.de > o.ate) throw new Error('A data inicial é maior que a final.');
     if (nDias(o.de, o.ate) > 400) throw new Error('Período máximo: 400 dias.');
-    try { localStorage.setItem('rel_opts', JSON.stringify({ sigla: o.sigla, slugs: o.slugs, dias: o.dias, de: o.de, ate: o.ate, graf: o.incGraf, nc: o.incNC, acont: o.incAcont, disc: o.incDisc, prazos: o.incPrazos, img: o.incImg })); } catch {}
+    try { localStorage.setItem('rel_opts', JSON.stringify({ sigla: o.sigla, slugs: o.slugs, dias: o.dias, quinz: o.quinz, de: o.de, ate: o.ate, graf: o.incGraf, nc: o.incNC, acont: o.incAcont, disc: o.incDisc, prazos: o.incPrazos, img: o.incImg })); } catch {}
     return o;
   };
   $('#rel-gerar', box).onclick = async e => {
