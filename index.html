@@ -605,7 +605,7 @@ function start(D){
 
   /* ---------- Início ---------- */
   $('#kpis').innerHTML = [
-    [D.convenio.meta_projetos, 'projetos previstos', 'pelo menos 64 em 24 meses · média de 4 por município'],
+    [65, 'projetos previstos', 'pelo menos 64 em 24 meses · média de 4 por município'],
     [cadastradas, 'demandas cadastradas', `${prod.length} em produção · ${P.filter(p=>p.situacao==='fila').length} na fila`],
     [cnt('concluido'), 'disciplinas concluídas', `${cnt('andamento') + cnt('aguardando')} em desenvolvimento`],
     [fmtBRL(D.convenio.valor_total), 'investidos no convênio', 'Itaipu + Conselho dos Lindeiros']
