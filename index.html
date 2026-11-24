@@ -165,7 +165,6 @@ a.kpi{display:block;text-decoration:none;color:inherit;transition:border-color .
 a.kpi:hover{border-color:var(--brand);transform:translateY(-1px)}
 .kpi .l .go{color:var(--brand);font-weight:700}
 .hero .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
-@media(max-width:430px){.kpi .v{font-size:1.5rem}.kpi{padding:12px 13px}}
 .tl-mais{margin:4px 0 0 20px;border:0;background:none;color:var(--brand-deep);font-weight:700;cursor:pointer;padding:4px 0;font-size:.92rem}
 .timeline.curta li.old{display:none}
 .hero .logos{display:flex;align-items:center;gap:22px;margin-top:22px;flex-wrap:wrap}
@@ -176,6 +175,8 @@ a.kpi:hover{border-color:var(--brand);transform:translateY(-1px)}
 .kpi .v{font-family:var(--font-display);font-weight:800;font-size:1.9rem;color:var(--brand-deep);line-height:1}
 .kpi .l{font-size:.85rem;color:var(--muted);margin-top:6px}
 .kpi .s{font-size:.8rem;color:var(--muted)}
+/* celular: números em duas colunas, com a fonte acompanhando a largura da tela (R$ 31,5 mi cabe numa linha) */
+@media(max-width:430px){.kpi .v{font-size:clamp(1.05rem,7.4vw - 8px,1.5rem);white-space:nowrap}.kpi{padding:12px 13px}}
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:28px;counter-reset:step}
 .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;position:relative}
 .step::before{counter-increment:step;content:counter(step);font-family:var(--font-display);font-weight:800;color:var(--brand);font-size:1.3rem;display:block;margin-bottom:6px}
@@ -439,6 +440,7 @@ table.tbl td.r,table.tbl th.r{text-align:right;white-space:nowrap}
 .mcard .rodape{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--muted);margin-top:6px}
 .mcard .par{color:var(--bad);font-weight:600}
 .kpis.k4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:18px}
+@media(max-width:600px){.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-bottom:8px}
 .info{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
 .info span{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:var(--font-display);font-weight:700}
