@@ -1197,7 +1197,7 @@ function start(D){
   const PG = { inicio: 'Início', municipios: 'Municípios', municipio: 'Município', mapa: 'Mapa dos projetos', evolucao: 'Evolução dos projetos', entregues: 'Projetos entregues', financeiro: 'Economia para os municípios', formalizacoes: 'Formalizações', equipe: 'Equipe técnica' };
   function lerRota(){
     let h = location.hash.replace(/^#/, ''); try { h = decodeURIComponent(h); } catch (e) {}
-    const [pg, arg] = h.split('/');
+    const [pg, bruto] = h.split('/'), arg = slugify(bruto);   // aceita também "#municipio/Foz do Iguaçu"
     if (pg === 'municipio') return MUNSLUG[arg] ? { pg, arg } : { pg: 'municipios' };
     if (pg === 'mapa') return { pg, arg: MUNSLUG[arg] ? arg : '' };
     return PG[pg] ? { pg } : { pg: 'inicio' };
