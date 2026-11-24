@@ -17,6 +17,9 @@ Rodam todo dia às 22h (horário de Brasília) pelo agendamento em `.github/work
   `nextcloud` conta os arquivos de projeto produzidos pela Usina (por tipo, com a data do último) e, para os que têm
   `galeria_nextcloud`, monta a galeria: pranchas em PDF viram JPG (1ª página, 1600 px) e renders são redimensionados.
   Segredos: `NEXTCLOUD_URL`, `NEXTCLOUD_USER`, `NEXTCLOUD_SENHA` (senha de aplicativo).
+- `robo/visitas.mjs` (chamado por `robo/historico.mjs`) — lê o total de visitas do site no contador público do GoatCounter
+  e acrescenta a leitura em `historico/visitas.json` (o Relatório calcula as visitas de cada período). Sem a conta
+  `usinadeprojetos` no GoatCounter, ou sem a opção "Allow adding visitor counts on your website", só avisa no log.
 
 Só os campos vindos das fontes mudam; municípios, descrições, valores, mapa, equipe, formalizações e financeiro ficam como estão.
 Projetos novos no ClickUp precisam ser cadastrados em `dados.js` (campo `clickup` com o id do cartão). Para pôr uma imagem

@@ -64,13 +64,24 @@ O repositório já vem clonado e o Git já está autenticado; é Linux: ignore o
   7.929.392 + Conselho 433.400), 24 meses, meta 64 projetos (4 por município). Coordenador: Fernando Rafael Federizzi.
   O usuário (João Felipe Martins Werle, eng. civil) é da equipe e mantém o site; o rodapé e o relatório levam o crédito
   "Site e robôs … desenvolvidos por João Felipe Martins Werle".
-- **Seções da página** (`index.html`): Início, Mapa dos Projetos (Leaflet, malhas do IBGE, contorno do lago),
-  Evolução (% por disciplina, vindo do ClickUp), Impacto Financeiro (valor do convênio × custo de contratar os projetos,
-  pesquisa em PNCP/portais em `financeiro`), Formalizações (só metadados e resumo curto de ofícios/e-mails por
-  município — nunca corpo nem anexos), Equipe Técnica (nome, conselho, telefone com link do WhatsApp, e-mail).
+- **Páginas** (`index.html`; cada item do menu é uma página pelo endereço `#…`, as seções têm id `pg-…`): Início
+  (`#inicio`: frase de impacto, números de projetos/valores/disciplinas, linha do tempo resumida), Municípios
+  (`#municipios`; no menu, lista dos 16 ao passar o mouse; página de cada um em `#municipio/mundo-novo` com demandas,
+  andamento, formalizações e linha do tempo filtrada), Mapa (`#mapa` ou `#mapa/nome-do-municipio`; Leaflet, malhas do
+  IBGE, contorno do lago), Evolução (% por disciplina, vindo do ClickUp), Entregues (`#entregues`: projetos a 100% no
+  ClickUp ou com o campo manual `entrega: {data, etapa, obs}` no projeto — etapas `entregue`, `captacao`, `licitacao`,
+  `obra`, `concluida`), Economia (`#financeiro`: valor do convênio × custo de contratar os projetos, pesquisa em
+  PNCP/portais em `financeiro`), Formalizações (só metadados e resumo curto de ofícios/e-mails por município — nunca
+  corpo nem anexos), Equipe Técnica (nome, conselho, telefone com link do WhatsApp, e-mail — o usuário quer manter).
+  Andamento abaixo de 10% aparece como etapa ("etapa inicial", "em levantamento"…), e prazos vencidos não são exibidos
+  como atraso (pedido do usuário: informações "singelas").
   Botão "Relatório" no menu abre `relatorio.js` (filtros de período/quinzena, município e projeto; comparativo usa
   `historico/AAAA-MM-DD.json`; login por e-mail + celular é só trava de conveniência — os dados são públicos).
-  Modo apresentação: `#apresentacao`.
+  Modo apresentação: `#apresentacao`. O site está fora do Google de propósito (`<meta name="robots" content="noindex">`).
+- **Visitas**: o site conta as páginas abertas no GoatCounter (conta `usinadeprojetos`, anônimo, sem cookies; envio
+  direto por `sendBeacon`, sem script de terceiros). O robô lê o total público (`/counter/TOTAL.json`) e grava em
+  `historico/visitas.json`; o Relatório mostra as visitas do período. Navegadores da equipe ficam fora da contagem
+  (login no Relatório ou endereço `#nao-contar`; `#contar` desfaz).
 - **`dados.js` / `dados.json`**: `convenio`, `lotes_entrega`, `municipios[]`, `projetos[]` (`slug`, `clickup` = ids dos
   cartões, `sigla`, `nome`, `descricao`, `valor_obra`, `prioridade`, `situacao`, `fisico`, `nextcloud`,
   `galeria_nextcloud`, `imagens` + campos do robô), `equipe[]`, `cronologia[]` (ordenada por data), `imprensa[]`,

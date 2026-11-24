@@ -89,6 +89,7 @@ function telaLogin() {
       const u = USUARIOS.find(x => x.h === h);
       if (!u) { tentativas++; err.textContent = 'Login ou senha incorretos.'; btn.disabled = false; return; }
       sessionStorage.setItem('rel_user', JSON.stringify({ nome: u.nome, papel: u.papel }));
+      try { localStorage.setItem('skipgc', 't'); } catch {}   // navegador da coordenação: fica fora da contagem de visitas do site
       telaForm();
     } catch (ex) { err.textContent = 'Não foi possível validar o acesso neste navegador (' + ex.message + ').'; btn.disabled = false; }
   };
@@ -228,6 +229,36 @@ async function estadoEm(data, dias) {
 }
 let ncPromessa = null;
 const arquivosNC = () => (ncPromessa = ncPromessa || lerJson('nextcloud/arquivos.json').catch(() => null));
+
+/* ---------- visitas ao site ----------
+   O site conta as páginas abertas no GoatCounter (anônimo, sem cookies). O total acumulado é lido pelo robô todo dia
+   (historico/visitas.json) e, na hora do relatório, ao vivo. Visitas de um período = total no fim − total no início
+   (interpolado entre as leituras). Requer no GoatCounter: Settings → "Allow adding visitor counts on your website". */
+const GC_SITE = 'https://usinadeprojetos.goatcounter.com';
+const numGC = v => { const t = String(v == null ? '' : v).replace(/\D/g, ''); return t ? Number(t) : null; };
+async function leituraVisitasAoVivo() {
+  try {
+    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 6000);
+    const r = await fetch(GC_SITE + '/counter/TOTAL.json', { cache: 'no-store', signal: ctl.signal }); clearTimeout(tm);
+    if (!r.ok) return null;
+    const n = numGC((await r.json()).count);
+    return n == null ? null : [Date.now(), n];
+  } catch { return null; }
+}
+async function visitasNoPeriodo(de, ate) {
+  let L = [];
+  try { L = ((await lerJson('historico/visitas.json')).leituras || []).map(x => [Date.parse(x[0]), Number(x[1])]); } catch {}
+  const vivo = await leituraVisitasAoVivo();
+  if (vivo) L.push(vivo);
+  L = L.filter(x => isFinite(x[0]) && isFinite(x[1])).sort((a, b) => a[0] - b[0]);
+  if (!L.length) return null;
+  // antes da primeira leitura conta como zero (o contador começa do zero quando a conta é criada)
+  const em = t => { if (t < L[0][0]) return 0; for (let i = 1; i < L.length; i++) if (t <= L[i][0]) { const [ta, va] = L[i - 1], [tb, vb] = L[i]; return tb === ta ? vb : va + (vb - va) * (t - ta) / (tb - ta); } return L[L.length - 1][1]; };
+  const t0 = Date.parse(de + 'T00:00:00-03:00'), t1 = Math.min(Date.parse(addDias(ate, 1) + 'T00:00:00-03:00'), Date.now());
+  const base = { total: L[L.length - 1][1], desde: new Date(L[0][0] - 3 * 3600e3).toISOString().slice(0, 10), aoVivo: !!vivo };
+  if (t1 < L[0][0]) return Object.assign(base, { v: null, parcial: true });   // período inteiro antes da medição
+  return Object.assign(base, { v: Math.max(0, Math.round(em(t1) - em(t0))), parcial: t0 < L[0][0] });
+}
 const INICIO_CLICKUP = '2026-08-01';
 // quinzenas: 1–15 e 16–último dia de cada mês, de agosto/2026 até hoje
 function quinzenas() {
@@ -410,6 +441,7 @@ async function montar(o) {
   for (const m of D.marcos_clickup || []) { const sg = (String(m.nome).match(/^([A-Z]{3})\./) || [])[1]; if (!munOk(sg)) continue; if (noPer(m.atualizado)) ev.push({ data: dia(m.atualizado), tipo: 'ClickUp', texto: `${m.nome} (${STL[m.status] || m.status})` }); }
   // acervo: arquivos inseridos no Nextcloud no período (nextcloud/arquivos.json, gravado pelo robô)
   const NC = o.incNC === false ? null : await arquivosNC();
+  const vis = await visitasNoPeriodo(o.de, ateEf);   // visitas ao site no período (null = contador ainda não ativado)
   const ncSigla = rel => (NC && NC.municipios && NC.municipios[String(rel).split('/')[1]]) || null;
   const slugsSet = new Set(slugs);
   const ncNoEscopo = a => slugs.length ? slugsSet.has(a[3]) : (!o.sigla || ncSigla(a[0]) === o.sigla);
@@ -485,6 +517,7 @@ async function montar(o) {
     `• Disciplinas concluídas no período: ${nConc} · iniciadas: ${nIni} · mudanças de status no ClickUp: ${nMov}${nCad ? ` · cadastradas: ${nCad}` : ''}`,
     `• Formalizações: ${nEnv} enviadas, ${nRec} respostas${pendForm.length ? ` · ${pendForm.length} aguardando resposta` : ''}`,
     temAcervo ? `• Acervo (Nextcloud): ${acervoNovos} arquivos inseridos (${acervoUsina} produzidos pela Usina)` : null,
+    vis && vis.v != null ? `• Visitas ao site: ${vis.v.toLocaleString('pt-BR')}${vis.parcial ? ` (desde ${fmtD(vis.desde)})` : ''} · total acumulado: ${vis.total.toLocaleString('pt-BR')}` : null,
     destaques.length ? `Destaques: ${destaques.map(l => `${l.p.sigla} ${l.p.nome} ${Math.round(l.pctI)}→${Math.round(l.pctF)}%`).join('; ')}` : null,
     prox.length ? `Próximos prazos: ${prox.slice(0, 3).map(x => `${fmtDs(x.data)} — ${x.texto}`).join('; ')}` : null,
     atras.length ? `Atrasados: ${atras.length} prazo(s) de disciplina` : null,
@@ -501,7 +534,7 @@ async function montar(o) {
     kpi(`${nEnv} / ${nRec}`, 'formalizações enviadas / respostas', pendForm.length ? `${pendForm.length} aguardando resposta` : ''),
     kpi(temAcervo ? acervoNovos : '—', 'arquivos inseridos no Nextcloud', temAcervo ? `${acervoUsina} produzidos pela Usina` : 'lista do Nextcloud indisponível'),
     kpi(prox.length, 'prazos nos próximos 30 dias', atras.length ? `${atras.length} em atraso` : 'nenhum atraso'),
-    kpi(ev.length, 'acontecimentos registrados', '')
+    kpi(vis && vis.v != null ? vis.v.toLocaleString('pt-BR') : '—', 'visitas ao site no período', vis ? (vis.v == null ? `medição desde ${fmtD(vis.desde)}` : `${vis.parcial ? `desde o início da medição (${fmtD(vis.desde)}) · ` : ''}total: ${vis.total.toLocaleString('pt-BR')}`) : 'contador de visitas ainda não ativado')
   ].join('');
   const sit = p => p.situacao === 'paralisado' ? '<span class="tag">paralisado</span>' : p.situacao === 'fila' ? '<span class="tag">na fila</span>' : '';
   const semDados = linhas.filter(l => l.pctF == null);
@@ -569,7 +602,7 @@ async function montar(o) {
   const sec = (t, h) => { if (h) secoes.push(`<h2>${++ns}. ${t}</h2>${h}`); };
   sec('Gráficos de evolução', grafHtml);
   sec('Evolução por projeto', `${tabela}<p class="obs">Colunas de data: andamento em ${esc(fmtD(vespera))} (véspera do período) e em ${esc(fmtD(ateEf))} (fim do período). Andamento = (concluídas + ½ em desenvolvimento) ÷ disciplinas do projeto cadastradas até a data.</p>`);
-  if (o.incAcont) sec('Acontecimentos do período', evHtml);
+  if (o.incAcont) sec(`Acontecimentos do período (${ev.length})`, evHtml);
   if (NC) sec('Arquivos inseridos no Nextcloud no período', ncHtml);
   if (o.incDisc) sec(`Situação por disciplina em ${fmtD(ateEf)}`, discHtml);
   if (o.incPrazos) sec('Próximos prazos (30 dias após o período)', prazosHtml);

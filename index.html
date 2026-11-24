@@ -3,13 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Usina de Projetos do Conselho dos Municípios Lindeiros ao Lago de Itaipu: mapa, evolução dos projetos, impacto financeiro, formalizações e equipe técnica.">
+<meta name="description" content="Usina de Projetos do Conselho dos Municípios Lindeiros ao Lago de Itaipu: projetos que tiram obras do papel nos 16 municípios lindeiros — municípios, mapa, evolução, entregues, economia, formalizações e equipe técnica.">
+<!-- fora do Google por enquanto (primeira leva da Usina): para voltar a aparecer, apagar a linha abaixo -->
+<meta name="robots" content="noindex">
 <meta name="color-scheme" content="light dark">
+<script>
+/* página aberta conforme o endereço (#mapa, #municipio/mundo-novo…): definida antes do desenho para não piscar a página inteira */
+(function(){var h=location.hash.slice(1);try{h=decodeURIComponent(h);}catch(e){}h=h.split('/')[0];var ok={inicio:1,municipios:1,municipio:1,mapa:1,evolucao:1,entregues:1,financeiro:1,formalizacoes:1,equipe:1};document.documentElement.setAttribute('data-pg',ok[h]?h:'inicio');})();
+</script>
 <meta name="theme-color" content="#0B5394">
 <link rel="canonical" href="https://usinadeprojetos.github.io/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Usina de Projetos — Conselho dos Municípios Lindeiros ao Lago de Itaipu">
-<meta property="og:description" content="Usina de Projetos do Conselho dos Municípios Lindeiros ao Lago de Itaipu: mapa, evolução dos projetos, impacto financeiro, formalizações e equipe técnica.">
+<meta property="og:description" content="Projetos que tiram obras do papel nos 16 municípios lindeiros ao Lago de Itaipu: municípios, mapa, evolução, projetos entregues e equipe técnica.">
 <meta property="og:url" content="https://usinadeprojetos.github.io/">
 <meta property="og:image" content="https://usinadeprojetos.github.io/img/og.jpg">
 <meta property="og:image:width" content="1200">
@@ -82,20 +88,62 @@ section.sec,main,body{overflow-x:clip}
 .brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;min-width:0}
 .brand img{height:40px;width:auto;display:block}
 .brand .bar{width:3px;height:40px;background:var(--brand);border-radius:2px;flex:none}
+/* marca da Usina: "USINA" em Lexend ExtraBold #0B5394 e "DE PROJETOS" #595959 (no tema escuro, tons claros equivalentes) */
+:root{--usina-u:#0B5394;--usina-d:#595959}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--usina-u:#63AEE9;--usina-d:#B4C0CC} }
+:root[data-theme="dark"]{--usina-u:#63AEE9;--usina-d:#B4C0CC}
 .wordmark{font-family:var(--font-display);line-height:1;white-space:nowrap}
-.wordmark .u{display:block;font-weight:800;font-size:1.05rem;color:var(--brand-deep);letter-spacing:.02em}
-.wordmark .d{display:block;font-weight:700;font-size:.62rem;color:var(--muted);letter-spacing:.14em}
-nav.menu{margin-left:auto;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
-nav.menu::-webkit-scrollbar{display:none}
-nav.menu a{text-decoration:none;color:var(--muted);font-weight:600;font-size:.92rem;padding:8px 10px;border-radius:8px;white-space:nowrap}
+.wordmark .u{display:block;font-weight:800;font-size:1.32rem;color:var(--usina-u);letter-spacing:.03em}
+.wordmark .d{display:block;font-weight:700;font-size:.69rem;color:var(--usina-d);letter-spacing:.12em;margin-top:3px}
+/* logo dos Lindeiros (preto sobre transparente): no tema escuro ganha um fundo branco para continuar legível */
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) img.plate{background:#fff;border-radius:6px;padding:3px 6px} }
+:root[data-theme="dark"] img.plate{background:#fff;border-radius:6px;padding:3px 6px}
+nav.menu{margin-left:auto;display:flex;align-items:center;gap:2px}
+nav.menu a{text-decoration:none;color:var(--muted);font-weight:600;font-size:.92rem;padding:8px 9px;border-radius:8px;white-space:nowrap}
 nav.menu a:hover,nav.menu a.on{color:var(--brand-ink);background:var(--brand-soft)}
-@media(max-width:720px){.wordmark{display:none}.top .wrap{gap:10px}}
+/* Municípios: lista ao passar o mouse (computador) ou ao tocar (menu do celular) */
+.dd{position:relative}
+.dd-t .car{font-size:.72em;margin-left:3px;opacity:.75;display:inline-block;transition:transform .15s}
+.dd-panel{display:none;position:absolute;left:50%;transform:translateX(-50%);top:100%;padding-top:10px;z-index:60}
+.dd-in{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 22px 48px -16px rgba(16,32,48,.38);padding:10px;width:min(600px,94vw);display:grid;grid-template-columns:1fr 1fr;gap:2px}
+nav.menu .dd-in a{display:block;padding:7px 10px;border-radius:8px;color:var(--fg);white-space:normal;font-size:.92rem}
+nav.menu .dd-in a:hover,nav.menu .dd-in a.on{background:var(--brand-soft);color:var(--brand-ink)}
+.dd-in a b{display:block;font-weight:700;line-height:1.2}
+.dd-in a small{display:block;color:var(--muted);font-size:.78rem;font-weight:400;margin-top:1px}
+.dd-in a small.par{color:var(--bad)}
+nav.menu .dd-in a.todos{grid-column:1/-1;border-top:1px solid var(--line);border-radius:0 0 8px 8px;margin-top:4px;padding-top:10px;color:var(--brand-deep);font-weight:700}
+@media (hover:hover) and (min-width:1100px){ .dd:hover .dd-panel,.dd:focus-within .dd-panel{display:block} .dd:hover .car{transform:rotate(180deg)} .dd.fecha .dd-panel{display:none!important} }
+/* botão do menu (celular e telas estreitas) */
+.menu-btn{display:none;margin-left:auto;width:44px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;align-items:center;justify-content:center;flex:none}
+.menu-btn i,.menu-btn i::before,.menu-btn i::after{display:block;width:20px;height:2px;background:var(--fg);border-radius:2px;position:relative;content:"";transition:transform .2s,background .2s}
+.menu-btn i::before{position:absolute;top:-6px}.menu-btn i::after{position:absolute;top:6px}
+.menu-btn[aria-expanded="true"] i{background:transparent}
+.menu-btn[aria-expanded="true"] i::before{top:0;transform:rotate(45deg)}
+.menu-btn[aria-expanded="true"] i::after{top:0;transform:rotate(-45deg)}
+@media (max-width:1099px){
+  .menu-btn{display:inline-flex}
+  nav.menu{display:none;position:absolute;left:0;right:0;top:100%;flex-direction:column;align-items:stretch;gap:2px;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 18px 30px -18px rgba(16,32,48,.45);padding:8px 16px 18px;max-height:calc(100dvh - var(--topo-h,64px));overflow:auto;overscroll-behavior:contain}
+  .top.aberto nav.menu{display:flex}
+  nav.menu a{font-size:1.02rem;padding:12px 12px}
+  .dd-t{display:flex!important;justify-content:space-between;align-items:center}
+  .dd.open .car{transform:rotate(180deg)}
+  .dd-panel{position:static;transform:none;padding:0 0 6px}
+  .dd.open .dd-panel{display:block}
+  .dd-in{width:auto;box-shadow:none;border:0;border-left:2px solid var(--brand-soft-2);border-radius:0;background:transparent;padding:0 0 0 8px;margin-left:12px}
+  nav.menu .dd-in a{padding:8px 10px}
+  nav.menu .exp-btn{margin:10px 0 0;justify-content:center;padding:12px 14px;font-size:1rem}
+  nav.menu .exp-btn .t{display:inline}
+}
+@media (max-width:420px){ .dd-in{grid-template-columns:1fr} }
+@media(max-width:720px){.brand img.logo-lind,.brand .bar{display:none}.top .wrap{gap:10px}}
 
-/* Seções */
-section.sec{padding-block:56px;border-bottom:1px solid var(--line);scroll-margin-top:calc(var(--topo-h,72px) + env(safe-area-inset-top,0px) - 24px)}
-#inicio{scroll-margin-top:100vh}
-body.apresenta section.sec{scroll-margin-top:0}
+/* Seções e páginas: cada item do menu mostra só a sua seção (endereço #inicio, #mapa, #municipio/nome…) */
+section.sec{padding-block:56px;border-bottom:1px solid var(--line)}
 section.sec:last-of-type{border-bottom:0}
+html[data-pg] main>section.sec{display:none;border-bottom:0}
+/* as seções se chamam pg-… para o navegador não rolar sozinho até elas quando o endereço muda */
+html[data-pg="inicio"] #pg-inicio,html[data-pg="municipios"] #pg-municipios,html[data-pg="municipio"] #pg-municipio,html[data-pg="mapa"] #pg-mapa,html[data-pg="evolucao"] #pg-evolucao,html[data-pg="entregues"] #pg-entregues,html[data-pg="financeiro"] #pg-financeiro,html[data-pg="formalizacoes"] #pg-formalizacoes,html[data-pg="equipe"] #pg-equipe{display:block}
+main{min-height:62vh}
 .sec-head{display:grid;grid-template-columns:4px 1fr;gap:18px;align-items:start;margin-bottom:28px}
 .sec-head .rail{width:4px;background:var(--brand);border-radius:2px;align-self:stretch}
 .sec-head p.lead{max-width:68ch;color:var(--muted);margin-top:8px;font-size:1.05rem}
@@ -104,9 +152,22 @@ section.sec:last-of-type{border-bottom:0}
 .hero{padding-block:48px 40px}
 .hero-grid{display:grid;gap:28px;grid-template-columns:1.2fr .8fr;align-items:start}
 @media(max-width:860px){.hero-grid{grid-template-columns:1fr}}
-.hero h1{font-size:clamp(2rem,1.4rem + 3vw,3.3rem);font-weight:800;letter-spacing:-.02em;color:var(--brand-deep)}
-.hero h1 small{display:block;font-size:.42em;font-weight:700;letter-spacing:.16em;color:var(--muted);margin-top:6px}
-.hero p.thesis{font-size:1.15rem;max-width:62ch;margin-top:16px}
+.hero h1{font-size:clamp(2.1rem,1.4rem + 3vw,3.4rem);font-weight:800;letter-spacing:-.02em;color:var(--brand-deep);line-height:1.08}
+.hero h1 small{display:block;font-size:.46em;font-weight:600;letter-spacing:0;color:var(--muted);margin-top:12px;line-height:1.3}
+.hero p.thesis{font-size:1.12rem;max-width:62ch;margin-top:16px}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:10px 18px;font-weight:700;font-size:.95rem;text-decoration:none;border:1px solid transparent;cursor:pointer;line-height:1.2}
+.btn.p{background:#0B5394;color:#fff}
+.btn.p:hover{background:#094679}
+.btn.s{background:var(--surface);color:var(--brand-ink);border-color:var(--line)}
+.btn.s:hover{border-color:var(--brand);background:var(--brand-soft)}
+a.kpi{display:block;text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}
+a.kpi:hover{border-color:var(--brand);transform:translateY(-1px)}
+.kpi .l .go{color:var(--brand);font-weight:700}
+.hero .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:430px){.kpi .v{font-size:1.5rem}.kpi{padding:12px 13px}}
+.tl-mais{margin:4px 0 0 20px;border:0;background:none;color:var(--brand-deep);font-weight:700;cursor:pointer;padding:4px 0;font-size:.92rem}
+.timeline.curta li.old{display:none}
 .hero .logos{display:flex;align-items:center;gap:22px;margin-top:22px;flex-wrap:wrap}
 .hero .logos img{height:44px;width:auto}
 .hero .logos .sep{width:1px;height:36px;background:var(--line)}
@@ -208,14 +269,14 @@ table.tbl td.c{text-align:center}
 .lightbox .x{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:999px;width:40px;height:40px;font-size:1.3rem;cursor:pointer}
 .lightbox .nav{display:flex;gap:8px;align-items:center}
 .lightbox .cnt{color:#fff;opacity:.8;font-size:.9rem;min-width:4.5em;text-align:center}
-.exp-btn{margin-left:auto;background:var(--brand-deep);color:#fff;border:0;border-radius:999px;padding:7px 14px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.exp-btn{margin-left:8px;background:#0B5394;color:#fff;border:0;border-radius:999px;padding:7px 14px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
 .exp-btn:hover{filter:brightness(1.1)}
 @media(max-width:600px){.exp-btn .t{display:none}.exp-btn{padding:7px 10px}}
 .lightbox .nav button{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:999px;padding:8px 16px;cursor:pointer}
 .popup-thumb{width:100%;height:120px;object-fit:cover;border-radius:6px;margin-top:8px;display:block}
 /* Indicadores físicos */
 .fis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:18px}
-.fis div{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:8px;padding:10px 12px}
+.fis>div{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:8px;padding:10px 12px}
 .fis .v{font-family:var(--font-display);font-weight:800;font-size:1.4rem;color:var(--brand-deep)}
 .fis .l{font-size:.82rem;color:var(--muted)}
 /* Modo apresentação */
@@ -265,7 +326,7 @@ table.matrix td .pm{color:var(--muted);font-size:.78rem}
 .lote .d{font-family:var(--font-display);font-weight:800;font-size:1.3rem;color:var(--brand-deep)}
 .lote .left{font-size:.85rem;color:var(--muted)}
 .lote ul{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px}
-.lote li{display:grid;grid-template-columns:1fr 60px 36px;gap:8px;align-items:center;font-size:.9rem}
+.lote li{display:grid;grid-template-columns:1fr 60px minmax(36px,auto);gap:8px;align-items:center;font-size:.9rem}
 .proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:16px}
 .pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);min-width:0}
 .pcard header{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
@@ -359,6 +420,76 @@ table.tbl td.r,table.tbl th.r{text-align:right;white-space:nowrap}
 .member .sp span{font-size:.74rem;background:var(--brand-soft);color:var(--brand-ink);border-radius:999px;padding:2px 8px}
 .team-sub{margin:26px 0 12px}
 
+/* Andamento: abaixo de 10% mostra a etapa em vez do número */
+.etapa{font-family:var(--font-body);font-weight:600;font-size:.78rem;color:var(--muted);white-space:nowrap;letter-spacing:0}
+.etapa.ok{color:var(--ok)}
+.pcard .pct .etapa,.map-list li .pct .etapa,.pct-cell .etapa{font-size:.78rem}
+
+/* Municípios */
+.crumbs{font-size:.9rem;color:var(--muted);margin-bottom:16px}
+.crumbs a{color:var(--brand-deep);text-decoration:none;font-weight:600}
+.crumbs a:hover{text-decoration:underline}
+.mun-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.mcard{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);transition:border-color .15s,transform .15s;min-width:0}
+.mcard:hover{border-color:var(--brand);transform:translateY(-1px)}
+.mcard .uf{font-size:.74rem;font-family:var(--font-display);font-weight:700;letter-spacing:.1em;color:var(--brand-deep);text-transform:uppercase}
+.mcard b{font-family:var(--font-display);font-size:1.08rem;line-height:1.2}
+.mcard .meta{font-size:.86rem;color:var(--muted)}
+.mcard .bar{margin-top:10px}
+.mcard .rodape{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--muted);margin-top:6px}
+.mcard .par{color:var(--bad);font-weight:600}
+.kpis.k4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:18px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-bottom:8px}
+.info{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.info span{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:var(--font-display);font-weight:700}
+.info b{display:block;margin-top:3px;font-weight:600;overflow-wrap:anywhere}
+.info a{font-weight:600}
+.aviso-par{background:color-mix(in srgb,var(--bad) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);color:var(--bad);border-radius:10px;padding:10px 14px;margin:0 0 16px;font-weight:600}
+.sub-h{margin:30px 0 4px}
+.sub-p{color:var(--muted);font-size:.92rem;margin-bottom:4px}
+.dem-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:12px}
+.dem{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;min-width:0}
+.dem b{font-family:var(--font-display);font-weight:700;font-size:.95rem;line-height:1.25;display:block}
+.dem .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.dem p{font-size:.88rem;color:var(--muted);margin-top:8px}
+.mini-tl{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.mini-tl li{display:grid;grid-template-columns:92px 1fr;gap:10px;font-size:.92rem}
+.mini-tl .d{font-family:var(--font-display);font-size:.78rem;font-weight:700;color:var(--brand-deep);padding-top:2px}
+.mini-tl span{color:var(--muted)}
+.mun-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:32px;flex-wrap:wrap}
+@media(max-width:560px){.mun-nav{justify-content:center}.mun-nav .btn{flex:1 1 100%;justify-content:center}}
+
+/* Entregues */
+.pipe{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0 8px;counter-reset:pipe}
+.pipe div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 10px;text-align:center;position:relative;min-width:0}
+.pipe div::before{counter-increment:pipe;content:counter(pipe);position:absolute;top:8px;left:10px;font-family:var(--font-display);font-weight:800;font-size:.78rem;color:var(--muted)}
+.pipe div b{display:block;font-family:var(--font-display);font-weight:800;font-size:1.7rem;color:var(--muted);line-height:1.1}
+.pipe div span{display:block;font-size:.84rem;color:var(--muted);line-height:1.25;margin-top:4px}
+.pipe div.on{border-color:var(--brand);background:var(--brand-soft)}
+.pipe div.on b{color:var(--brand-deep)}
+.pipe div.on span{color:var(--brand-ink)}
+@media(max-width:700px){.pipe{grid-template-columns:repeat(2,minmax(0,1fr))}.pipe div:last-child{grid-column:1/-1}}
+.trk{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:12px}
+.trk i{height:6px;border-radius:3px;background:var(--st-pend)}
+.trk i.on{background:var(--st-conc)}
+.trk-l{font-size:.8rem;color:var(--muted);margin-top:4px}
+.trk-l b{color:var(--st-conc)}
+.vazio{background:var(--surface);border:1px dashed var(--line);border-radius:var(--radius);padding:18px;color:var(--muted)}
+.prox{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.prox li{display:grid;grid-template-columns:minmax(0,1fr) 150px 120px 72px;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.prox li b{font-weight:600;display:block;line-height:1.25}
+.prox li small{color:var(--muted)}
+.prox li .q{font-size:.86rem;color:var(--muted)}
+.prox li .n{text-align:right;font-family:var(--font-display);font-weight:700;color:var(--brand-deep)}
+.prox li a{color:inherit;text-decoration:none}
+.prox li a:hover b{text-decoration:underline}
+@media(max-width:640px){.prox li{grid-template-columns:minmax(0,1fr) 72px}.prox li .q{grid-column:1/-1;order:3}.prox li .bar{grid-column:1/-1;order:4}}
+details.ref>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+details.ref>summary::-webkit-details-marker{display:none}
+details.ref>summary .abre{color:var(--brand-deep);font-weight:700;font-size:.9rem;white-space:nowrap}
+details.ref[open]>summary .abre::after{content:" ▴"}
+details.ref:not([open])>summary .abre::after{content:" ▾"}
+
 /* Rodapé */
 footer{padding-block:36px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
 footer .wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center}
@@ -373,32 +504,43 @@ footer .credit b{color:var(--fg)}
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#inicio" aria-label="Usina de Projetos – início">
-      <img src="img/lindeiros.png" alt="Conselho de Desenvolvimento dos Municípios Lindeiros ao Lago de Itaipu">
+      <img class="logo-lind plate" src="img/lindeiros.png" alt="Conselho de Desenvolvimento dos Municípios Lindeiros ao Lago de Itaipu">
       <span class="bar" aria-hidden="true"></span>
       <span class="wordmark"><span class="u">USINA</span><span class="d">DE PROJETOS</span></span>
     </a>
-    <nav class="menu" aria-label="Seções">
-      <a href="#inicio">Início</a>
-      <a href="#mapa">Mapa</a>
-      <a href="#evolucao">Evolução</a>
-      <a href="#financeiro">Impacto financeiro</a>
-      <a href="#formalizacoes">Formalizações</a>
-      <a href="#equipe">Equipe</a>
+    <button type="button" class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu"><i></i></button>
+    <nav class="menu" id="menu" aria-label="Páginas">
+      <a href="#inicio" data-pg="inicio">Início</a>
+      <div class="dd" id="dd-mun">
+        <a href="#municipios" data-pg="municipios" class="dd-t" aria-haspopup="true">Municípios<span class="car" aria-hidden="true">▾</span></a>
+        <div class="dd-panel"><div class="dd-in" id="dd-mun-list"></div></div>
+      </div>
+      <a href="#mapa" data-pg="mapa">Mapa</a>
+      <a href="#evolucao" data-pg="evolucao">Evolução</a>
+      <a href="#entregues" data-pg="entregues">Entregues</a>
+      <a href="#financeiro" data-pg="financeiro">Economia</a>
+      <a href="#formalizacoes" data-pg="formalizacoes">Formalizações</a>
+      <a href="#equipe" data-pg="equipe">Equipe</a>
       <button type="button" class="exp-btn" id="btn-export" title="Exportar relatório de atividades (acesso restrito à coordenação)"><span class="i" aria-hidden="true">⬇</span><span class="t">Relatório</span></button>
     </nav>
   </div>
 </header>
 
 <main>
-<section class="sec hero" id="inicio">
+<section class="sec hero" id="pg-inicio">
   <div class="wrap">
     <div class="hero-grid">
       <div>
-        <p class="eyebrow">Conselho dos Municípios Lindeiros ao Lago de Itaipu · Itaipu Binacional</p>
-        <h1>Usina de Projetos<small>Projetos de engenharia e arquitetura para 16 municípios</small></h1>
-        <p class="thesis">Um escritório técnico regional, financiado pela Itaipu por meio do Conselho dos Lindeiros, que elabora em BIM os projetos executivos de que as prefeituras precisam para captar recursos e licitar obras — sem que cada município tenha de contratar um escritório por conta própria.</p>
+        <p class="eyebrow">Usina de Projetos · Conselho dos Lindeiros · Itaipu Binacional</p>
+        <h1>Projetos que tiram obras do papel<small>nos 16 municípios lindeiros ao Lago de Itaipu</small></h1>
+        <p class="thesis">Uma equipe técnica regional, custeada pela Itaipu Binacional e pelo Conselho dos Lindeiros, elabora em BIM os projetos executivos de que as prefeituras precisam para captar recursos e licitar obras — sem que cada município tenha de licitar e contratar um escritório por conta própria.</p>
+        <div class="cta">
+          <a class="btn p" href="#municipios">Conheça os municípios</a>
+          <a class="btn s" href="#mapa">Mapa dos projetos</a>
+          <a class="btn s" href="#entregues">Projetos entregues</a>
+        </div>
         <div class="logos">
-          <img src="img/lindeiros.png" alt="Conselho dos Municípios Lindeiros ao Lago de Itaipu">
+          <img class="plate" src="img/lindeiros.png" alt="Conselho dos Municípios Lindeiros ao Lago de Itaipu">
           <span class="sep" aria-hidden="true"></span>
           <img src="img/itaipu.png" alt="Itaipu Binacional">
         </div>
@@ -423,7 +565,8 @@ footer .credit b{color:var(--fg)}
       </div>
       <div class="card">
         <h3>Linha do tempo</h3>
-        <ul class="timeline" id="timeline"></ul>
+        <ul class="timeline curta" id="timeline"></ul>
+        <button type="button" class="tl-mais" id="tl-mais" hidden></button>
       </div>
     </div>
     <div class="card" style="margin-top:24px">
@@ -433,7 +576,19 @@ footer .credit b{color:var(--fg)}
   </div>
 </section>
 
-<section class="sec" id="mapa">
+<section class="sec" id="pg-municipios">
+  <div class="wrap">
+    <div class="sec-head"><span class="rail" aria-hidden="true"></span><div><p class="eyebrow">Municípios</p><h2>Os 16 municípios lindeiros</h2><p class="lead">Quinze municípios no Paraná e Mundo Novo, no Mato Grosso do Sul, à margem do Lago de Itaipu. Escolha um para ver as demandas apresentadas, o andamento dos projetos e as formalizações com a prefeitura.</p></div></div>
+    <div class="kpis k4" id="muns-kpis"></div>
+    <div class="mun-grid" id="muns-grid"></div>
+  </div>
+</section>
+
+<section class="sec" id="pg-municipio">
+  <div class="wrap" id="mun-page"></div>
+</section>
+
+<section class="sec" id="pg-mapa">
   <div class="wrap">
     <div class="sec-head"><span class="rail" aria-hidden="true"></span><div><p class="eyebrow">Mapa dos projetos</p><h2>Onde cada projeto acontece</h2><p class="lead">Os 16 municípios lindeiros e as demandas cadastradas em cada um. Clique num marcador ou num item da lista para ver o andamento das disciplinas.</p></div></div>
     <div class="filters" id="map-filters">
@@ -455,7 +610,7 @@ footer .credit b{color:var(--fg)}
   </div>
 </section>
 
-<section class="sec" id="evolucao">
+<section class="sec" id="pg-evolucao">
   <div class="wrap">
     <div class="sec-head"><span class="rail" aria-hidden="true"></span><div><p class="eyebrow">Evolução dos projetos</p><h2>O que já está pronto, pasta por pasta</h2><p class="lead">Cada projeto é dividido em disciplinas (as “pastas” do projeto executivo). O andamento vem do mural de tarefas da equipe no ClickUp.</p></div></div>
     <div class="kpis" id="evo-kpis" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:18px"></div>
@@ -483,9 +638,23 @@ footer .credit b{color:var(--fg)}
   </div>
 </section>
 
-<section class="sec" id="financeiro">
+<section class="sec" id="pg-entregues">
   <div class="wrap">
-    <div class="sec-head"><span class="rail" aria-hidden="true"></span><div><p class="eyebrow">Impacto financeiro</p><h2>As prefeituras não licitam nem pagam os projetos</h2><p class="lead">Sem a Usina, cada município teria de abrir uma licitação para cada projeto e pagar do próprio caixa — um processo caro, lento e que exige um corpo técnico que a maioria dos municípios pequenos não tem. Com a Usina, a Itaipu custeia 95% e os projetos chegam prontos para captar recursos e licitar a obra.</p></div></div>
+    <div class="sec-head"><span class="rail" aria-hidden="true"></span><div><p class="eyebrow">Projetos entregues</p><h2>Prontos para captar recursos e licitar a obra</h2><p class="lead">Projetos executivos concluídos pela Usina e entregues às prefeituras. A partir daqui o município capta o recurso e licita a obra — e cada etapa, até a obra pronta, passa a ser acompanhada nesta página.</p></div></div>
+    <div class="kpis k4" id="ent-kpis"></div>
+    <h3 style="margin:8px 0 0">Do projeto à obra</h3>
+    <div class="pipe" id="ent-pipe"></div>
+    <p class="note" style="margin:0 0 6px">Projetos entregues em cada etapa. A etapa é atualizada quando a prefeitura informa a captação do recurso, a licitação ou o início da obra.</p>
+    <div class="proj-cards" id="ent-cards"></div>
+    <h3 class="sub-h">Próximas entregas</h3>
+    <p class="sub-p">Projetos em produção, na ordem das metas de entrega definidas pela equipe.</p>
+    <ul class="prox" id="ent-prox"></ul>
+  </div>
+</section>
+
+<section class="sec" id="pg-financeiro">
+  <div class="wrap">
+    <div class="sec-head"><span class="rail" aria-hidden="true"></span><div><p class="eyebrow">Economia para os municípios</p><h2>As prefeituras não licitam nem pagam os projetos</h2><p class="lead">Sem a Usina, cada município teria de abrir uma licitação para cada projeto e pagar do próprio caixa — um processo caro, lento e que exige um corpo técnico que a maioria dos municípios pequenos não tem. Com a Usina, a Itaipu custeia 95% e os projetos chegam prontos para captar recursos e licitar a obra.</p></div></div>
     <div class="kpis" id="pay-strip" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-bottom:18px"></div>
     <div class="fin-grid">
       <div class="card">
@@ -506,14 +675,14 @@ footer .credit b{color:var(--fg)}
         <p class="note" style="margin-top:4px">Referências: Nota Técnica SEA/MPF 11/2015 (2–5% para o conjunto completo), Portaria MGI/MF/CGU 33/2023 (teto de 5%), Paranacidade SFM (teto de 4%), CAU/BR Tabela 5 para 500–4.000 m² (4,4–9,7% só a arquitetura, mais complementares).</p>
         <div class="compare" id="compare"></div>
         <p class="note" id="compare-note"></p>
-        <div id="real-cmp" style="margin-top:18px"></div>
       </div>
     </div>
-    <div class="card" style="margin-top:16px" id="bench-card">
-      <h3>Referências de mercado</h3>
-      <p class="muted" style="font-size:.92rem;margin-bottom:10px" id="bench-intro"></p>
+    <div class="card" style="margin-top:16px"><div id="real-cmp"></div></div>
+    <details class="card ref" style="margin-top:16px" id="bench-card">
+      <summary><h3 style="margin:0">Referências de mercado e fontes</h3><span class="abre">ver tabela</span></summary>
+      <p class="muted" style="font-size:.92rem;margin:10px 0" id="bench-intro"></p>
       <div class="tbl-wrap"><table class="tbl" id="bench"></table></div>
-    </div>
+    </details>
     <div class="card" style="margin-top:16px" id="prazo-card" hidden>
       <h3>Quanto tempo leva</h3>
       <p class="muted" style="font-size:.92rem" id="prazo-intro"></p>
@@ -529,7 +698,7 @@ footer .credit b{color:var(--fg)}
   </div>
 </section>
 
-<section class="sec" id="formalizacoes">
+<section class="sec" id="pg-formalizacoes">
   <div class="wrap">
     <div class="sec-head"><span class="rail" aria-hidden="true"></span><div><p class="eyebrow">Formalizações</p><h2>O que foi enviado às prefeituras e o que voltou</h2><p class="lead">Ofícios, atas, pedidos de documentação e entregas de projeto registrados pelo e-mail oficial da Usina, com a resposta de cada município.</p></div></div>
     <div class="form-kpis" id="form-kpis"></div>
@@ -537,7 +706,7 @@ footer .credit b{color:var(--fg)}
   </div>
 </section>
 
-<section class="sec" id="equipe">
+<section class="sec" id="pg-equipe">
   <div class="wrap">
     <div class="sec-head"><span class="rail" aria-hidden="true"></span><div><p class="eyebrow">Equipe técnica</p><h2>Quem faz os projetos</h2><p class="lead">Profissionais selecionados pelos editais 003 e 004/2026 do Conselho, contratados por hora de trabalho efetivo e com responsabilidade técnica própria (ART/RRT) em cada entrega.</p></div></div>
     <div id="team"></div>
@@ -547,12 +716,13 @@ footer .credit b{color:var(--fg)}
 
 <footer>
   <div class="wrap">
-    <div><img src="img/lindeiros.png" alt=""><img src="img/itaipu.png" alt=""></div>
+    <div><img class="plate" src="img/lindeiros.png" alt=""><img src="img/itaipu.png" alt=""></div>
     <div>
       <b>Conselho de Desenvolvimento dos Municípios Lindeiros ao Lago de Itaipu</b><br>
       Av. Brasil, 136 · Baixada Amarela · Santa Helena/PR · CEP 85892-218<br>
       (45) 3268-2489 · usinadeprojetos@lindeiros.org.br · CNPJ 00.405.446/0001-04<br>
-      <span id="foot-upd"></span>
+      <span id="foot-upd"></span><br>
+      <span>Visitas ao site contadas de forma anônima, sem cookies.</span>
       <div class="qr-box"><div id="qr"></div><div><b>Acesse pelo celular</b><br><span class="qr-note" id="qr-url"></span></div></div>
     </div>
   </div>
@@ -591,9 +761,29 @@ const TIPOS_ARQ = { pdf: 'PDF', dwg: 'DWG', dxf: 'DXF', rvt: 'Revit', rfa: 'fam�
 const acervoHtml = p => (!p.acervo || !p.acervo.usina) ? '' : `<div class="muted" style="font-size:.82rem;margin-top:6px" title="Arquivos de projeto produzidos pela Usina no acervo (Nextcloud), lidos em ${esc(fmtD(p.acervo.lido_em))}">Acervo: ${p.acervo.usina} arquivos de projeto${Object.keys(p.acervo.por_tipo||{}).length ? ' (' + Object.entries(p.acervo.por_tipo).sort((a,b) => b[1]-a[1]).slice(0,4).map(([k,v]) => v + ' ' + (TIPOS_ARQ[k] || k.toUpperCase())).join(', ') + ')' : ''}${p.acervo.ultimo ? ' · último em ' + esc(fmtD(p.acervo.ultimo)) : ''}</div>`;
 const today = new Date(); today.setHours(0,0,0,0);
 const daysTo = s => Math.round((new Date(s + 'T00:00:00') - today) / 86400000);
+const fmtBRL1 = n => !n ? '—' : n >= 1e6 ? 'R$ ' + (n/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1}) + ' mi' : fmtBRL(n);
+const slugify = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/['’]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+// andamento exibido com delicadeza: abaixo de 10% aparece a etapa em vez do número; 100% = entregue
+const temAguardando = p => (p.disciplinas || []).some(x => x.status === 'aguardando');
+const etapaDe = p => {
+  if (!p.n_itens) return null;
+  if (p.pct >= 100) return 'entregue';
+  if (p.pct >= 10) return null;
+  if (temAguardando(p)) return 'aguardando dados';
+  if ((p.disciplinas || []).some(x => x.grupo === 'levantamentos' && x.status !== 'pendente')) return 'em levantamento';
+  return 'etapa inicial';
+};
+const pctHtml = p => { if (!p.n_itens) return ''; const e = etapaDe(p); return e ? `<span class="etapa${e === 'entregue' ? ' ok' : ''}">${e}</span>` : `${p.pct}%`; };
+// projeto entregue: concluído no ClickUp (100%) ou marcado à mão em dados.js (campo "entrega": {data, etapa, obs})
+const ETAPAS = [['entregue','Entregue à prefeitura'],['captacao','Captação de recursos'],['licitacao','Licitação da obra'],['obra','Obra em andamento'],['concluida','Obra concluída']];
+const isEntregue = p => p.situacao !== 'cancelado' && (!!(p.entrega && p.entrega.data) || (p.n_itens > 0 && p.pct >= 100));
+const entregueEm = p => (p.entrega && p.entrega.data) ? p.entrega.data : ((p.disciplinas || []).map(x => x.concluido_em || '').sort().pop() || p.atualizado || '');
+const etapaEntrega = p => (p.entrega && ETAPAS.some(e => e[0] === p.entrega.etapa)) ? p.entrega.etapa : 'entregue';
 
 function start(D){
   if (!D) { document.body.insertAdjacentHTML('afterbegin','<p style="padding:20px">Não foi possível carregar dados.js</p>'); return; }
+  D.municipios.forEach(m => { m.slug = slugify(m.nome); });   // endereço da página do município: #municipio/mundo-novo
   const MUN = Object.fromEntries(D.municipios.map(m => [m.sigla, m]));
   const P = D.projetos.map(p => Object.assign({}, p, { municipio: MUN[p.sigla] }));
   const prod = P.filter(p => p.situacao === 'producao');
@@ -604,14 +794,30 @@ function start(D){
   const pctMedio = prod.length ? Math.round(prod.reduce((s,p) => s + p.pct, 0) / prod.length) : 0;
 
   /* ---------- Início ---------- */
+  const ativos = P.filter(p => p.situacao !== 'cancelado');
+  const ENT = ativos.filter(isEntregue).sort((a,b) => entregueEm(b).localeCompare(entregueEm(a)) || a.nome.localeCompare(b.nome));
+  const prodAtivos = prod.filter(p => !isEntregue(p));   // em produção = ainda não entregues
+  const somaValorObra = list => list.reduce((s,p) => s + (p.valor_obra || 0), 0);
+  const kpiHtml = ([v,l,s,href]) => `<${href ? `a href="${href}"` : 'div'} class="kpi"><div class="v num">${esc(v)}</div><div class="l">${esc(l)}</div>${s ? `<div class="s">${esc(s)}</div>` : ''}</${href ? 'a' : 'div'}>`;
   $('#kpis').innerHTML = [
-    [D.convenio.meta_projetos, 'projetos previstos', 'pelo menos 64 em 24 meses · média de 4 por município'],
-    [cadastradas, 'demandas cadastradas', `${prod.length} em produção · ${P.filter(p=>p.situacao==='fila').length} na fila`],
-    [cnt('concluido'), 'disciplinas concluídas', `${cnt('andamento') + cnt('aguardando')} em desenvolvimento`],
-    [fmtBRL(D.convenio.valor_total), 'investidos no convênio', 'Itaipu + Conselho dos Lindeiros']
-  ].map(([v,l,s]) => `<div class="kpi"><div class="v num">${esc(v)}</div><div class="l">${esc(l)}</div><div class="s">${esc(s)}</div></div>`).join('');
+    [D.convenio.meta_projetos, 'projetos previstos', 'pelo menos 4 por município em 24 meses', '#municipios'],
+    [prodAtivos.length, 'projetos em produção', `${cadastradas} demandas cadastradas · ${P.filter(p=>p.situacao==='fila').length} na fila`, '#evolucao'],
+    [ENT.length, ENT.length === 1 ? 'projeto entregue' : 'projetos entregues', 'prontos para captar recursos e licitar a obra', '#entregues'],
+    [fmtBRL1(somaValorObra(prod)), 'em obras com projeto em produção', `${fmtBRL1(somaValorObra(ativos))} somando todas as demandas`, '#financeiro'],
+    [cnt('concluido'), 'disciplinas concluídas', `${cnt('andamento') + cnt('aguardando')} em desenvolvimento`, '#evolucao'],
+    [fmtBRL(D.convenio.valor_total), 'investidos no convênio', 'Itaipu + Conselho dos Lindeiros', '#financeiro']
+  ].map(kpiHtml).join('');
 
-  $('#timeline').innerHTML = [...D.cronologia].sort((a, b) => a.data.localeCompare(b.data)).map(e => `<li class="${e.meta ? 'meta' : ''}"><span class="d">${esc(e.data.endsWith('-01-01') ? e.data.slice(0,4) : fmtD(e.data))}</span><b>${esc(e.titulo)}</b><span>${esc(e.texto)}</span></li>`).join('');
+  // linha do tempo: aparecem os 6 últimos acontecimentos e as próximas metas; o restante (desde 1990) abre no botão
+  const crono = [...D.cronologia].sort((a, b) => a.data.localeCompare(b.data));
+  const hojeIso = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);
+  const passados = crono.filter(e => e.data <= hojeIso);
+  const corteTl = passados.length > 6 ? passados[passados.length - 6].data : '';
+  const tlEl = $('#timeline'), tlBtn = $('#tl-mais'), nOld = crono.filter(e => corteTl && e.data < corteTl).length;
+  tlEl.innerHTML = crono.map(e => `<li class="${e.meta ? 'meta' : ''}${corteTl && e.data < corteTl ? ' old' : ''}"><span class="d">${esc(e.data.endsWith('-01-01') ? e.data.slice(0,4) : fmtD(e.data))}</span><b>${esc(e.titulo)}</b><span>${esc(e.texto)}</span></li>`).join('');
+  const tlTxt = () => tlEl.classList.contains('curta') ? `Ver a linha do tempo completa (+${nOld} acontecimentos, desde ${crono[0].data.slice(0,4)})` : 'Mostrar só os acontecimentos recentes';
+  if (nOld) { tlBtn.hidden = false; tlBtn.textContent = tlTxt(); tlBtn.addEventListener('click', () => { tlEl.classList.toggle('curta'); tlBtn.textContent = tlTxt(); }); }
+  else tlEl.classList.remove('curta');
   $('#press').innerHTML = (D.imprensa || []).map(n => `<li><span class="d">${esc(fmtD(n.data))}</span><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.titulo)}</a><span class="v">${esc(n.veiculo)}</span></li>`).join('');
 
   /* ---------- Mapa ---------- */
@@ -637,7 +843,7 @@ function start(D){
     : { color: tok('--brand-deep'), weight: 1.2, fillColor: par ? tok('--land-par') : tok('--brand-soft-2'), fillOpacity: .75 }; };
   const munLayer = L.geoJSON(D.geojson, {
     style: styleMun,
-    onEachFeature: (f, l) => { l.bindTooltip(f.properties.nome, { permanent: true, direction: 'center', className: 'leaflet-tooltip mun' }); l.on('click', () => { fm.value = f.properties.sigla; state.mun = f.properties.sigla; render(); }); }
+    onEachFeature: (f, l) => { l.bindTooltip(f.properties.nome, { permanent: true, direction: 'center', className: 'leaflet-tooltip mun' }); l.on('click', () => { fm.value = f.properties.sigla; state.mun = f.properties.sigla; render(); try { history.replaceState(null, '', '#mapa/' + MUN[state.mun].slug); } catch (e) {} }); }
   }).addTo(map);
   // o reservatório fica por cima: os limites municipais do IBGE avançam até o meio do lago
   const lagoLayer = D.lago ? L.geoJSON(D.lago, { style: () => state.modo === 'sat' ? { color: '#7FDBFF', weight: .8, fillOpacity: 0 } : { color: tok('--brand'), weight: 1, fillColor: tok('--water'), fillOpacity: .9 }, interactive: false }).addTo(map) : null;
@@ -661,7 +867,7 @@ function start(D){
     return '<div class="gb">' + GRUPOS.map(([g,l]) => { const it = p.disciplinas.filter(i => i.grupo === g); if (!it.length) return ''; const n = it.length; const c = it.filter(i=>i.status==='concluido').length, a = it.filter(i=>i.status==='andamento').length, w = it.filter(i=>i.status==='aguardando').length; return `<div class="gbr"><span>${esc(l)}</span><span class="bar"><i class="c" style="width:${100*c/n}%"></i><i class="a" style="width:${100*a/n}%"></i><i class="g" style="width:${100*w/n}%"></i></span><span class="num">${c}/${n}</span></div>`; }).join('') + '</div>';
   }
   function popup(p){
-    const bar = p.n_itens ? `<div class="bar"><i class="c" style="width:${100*p.n_concluidos/p.n_itens}%"></i><i class="a" style="width:${100*p.n_andamento/p.n_itens}%"></i></div><small class="muted">${p.n_concluidos} de ${p.n_itens} disciplinas concluídas · ${p.n_andamento} em desenvolvimento</small>` : `<small class="muted">${p.situacao === 'banco' ? 'Demanda cadastrada no banco de projetos' : p.situacao === 'paralisado' ? 'Projeto paralisado' : 'Ainda sem tarefas abertas'}</small>`;
+    const bar = p.n_itens ? `<div class="bar"><i class="c" style="width:${100*p.n_concluidos/p.n_itens}%"></i><i class="a" style="width:${100*p.n_andamento/p.n_itens}%"></i></div><small class="muted">${isEntregue(p) ? `Projeto entregue · ${p.n_itens} disciplinas concluídas` : (p.n_concluidos || p.n_andamento) ? `${p.n_concluidos} de ${p.n_itens} disciplinas concluídas${p.n_andamento ? ` · ${p.n_andamento} em desenvolvimento` : ''}` : `${p.n_itens} disciplinas planejadas · ${etapaDe(p) || 'em andamento'}`}</small>` : `<small class="muted">${p.situacao === 'banco' ? 'Demanda cadastrada no banco de projetos' : p.situacao === 'paralisado' ? 'Projeto paralisado' : 'Ainda sem tarefas abertas'}</small>`;
     return `<h4>${esc(p.nome)}</h4><div class="muted">${esc(p.municipio.nome)} · ${esc(CATS[p.categoria]||p.categoria)} · prioridade ${p.prioridade}</div><p style="margin-top:6px">${esc(p.descricao)}</p><div style="margin-top:6px"><span class="chip sit-${p.situacao}"><i class="dot"></i>${esc(SIT[p.situacao])}</span> ${p.valor_obra ? `<span class="chip">obra ${esc(fmtBRL(p.valor_obra))}</span>` : ''} ${p.lote_entrega ? `<span class="chip">entrega ${esc(fmtD(p.lote_entrega))}</span>` : ''} ${cpxChip(p)}</div>${p.imagens && p.imagens.length ? `<img class="popup-thumb" src="${esc(p.imagens[0].src)}" alt="${esc(p.imagens[0].legenda)}">` : ''}${bar}${groupBars(p)}`;
   }
   function visible(p){ return p.situacao !== 'cancelado' && (!state.mun || p.sigla === state.mun) && (!state.sit || p.situacao === state.sit) && state.cats.has(p.categoria); }
@@ -673,26 +879,37 @@ function start(D){
       m.bindPopup(popup(p), { maxWidth: 360 }); m.addTo(markers); p._m = m;
       m.on('click', () => highlight(p.slug));
     });
-    $('#proj-list').innerHTML = vis.map(p => `<li data-slug="${p.slug}" style="--c:${catColor(p.categoria)}"><span class="sq"></span><div><b>${esc(p.nome)}</b><small>${esc(p.municipio.nome)} · ${esc(SIT[p.situacao])}${p.lote_entrega ? ' · entrega ' + fmtDs(p.lote_entrega) : ''}</small></div><span class="pct num">${p.n_itens ? p.pct + '%' : ''}</span></li>`).join('');
+    $('#proj-list').innerHTML = vis.map(p => `<li data-slug="${p.slug}" style="--c:${catColor(p.categoria)}"><span class="sq"></span><div><b>${esc(p.nome)}</b><small>${esc(p.municipio.nome)} · ${isEntregue(p) ? 'Entregue' : esc(SIT[p.situacao])}${p.lote_entrega && !isEntregue(p) && daysTo(p.lote_entrega) >= 0 ? ' · entrega ' + fmtDs(p.lote_entrega) : ''}</small></div><span class="pct num">${pctHtml(p)}</span></li>`).join('');
     $('#list-count').textContent = vis.length + (vis.length === 1 ? ' projeto' : ' projetos');
     $('#list-title').textContent = state.mun ? MUN[state.mun].nome : 'Projetos';
     const fmtInt = n => n == null ? '—' : Math.round(n).toLocaleString('pt-BR');
     if (state.mun) { const mm = MUN[state.mun]; $('#list-sub').innerHTML = `${mm.populacao ? fmtInt(mm.populacao) + ' habitantes (Censo 2022)' : ''}${mm.prefeito ? ' · Prefeito(a): ' + esc(mm.prefeito) : ''}${mm.ponto_focal ? ' · Ponto focal: ' + esc(mm.ponto_focal) : ''}${mm.observacao ? '<br><span style="color:var(--bad)">' + esc(mm.observacao) + '</span>' : ''}`; }
     else { const popT = D.municipios.reduce((s,m) => s + (m.populacao || 0), 0); $('#list-sub').innerHTML = `16 municípios · ${fmtInt(popT)} habitantes (Censo 2022) · ${P.filter(p => p.situacao !== 'cancelado').length} demandas cadastradas`; }
+    if (state.mun) $('#list-sub').insertAdjacentHTML('beforeend', `<br><a href="#municipio/${esc(MUN[state.mun].slug)}" style="font-weight:600">Página de ${esc(MUN[state.mun].nome)} ›</a>`);
+    fitMap();
+  }
+  // enquadra o município escolhido (ou os 16); chamado também quando a página do mapa é aberta
+  function fitMap(){
     if (state.mun) { const f = munLayer.getLayers().find(l => l.feature.properties.sigla === state.mun); if (f) map.fitBounds(f.getBounds().pad(.6)); } else map.fitBounds(munLayer.getBounds().pad(.08));
+  }
+  // filtro de município vindo do endereço (#mapa/nome-do-municipio) ou do menu (#mapa = todos)
+  function mapaMunicipio(sigla){
+    map.invalidateSize();
+    if ((sigla || '') !== state.mun) { state.mun = sigla || ''; fm.value = state.mun; render(); } else fitMap();
   }
   function highlight(slug){ document.querySelectorAll('#proj-list li').forEach(li => li.classList.toggle('on', li.dataset.slug === slug)); }
   $('#proj-list').addEventListener('click', e => { const li = e.target.closest('li'); if (!li) return; const p = P.find(x => x.slug === li.dataset.slug); if (!p || !p._m) return; highlight(p.slug); map.flyTo([p._lat, p._lng], Math.max(map.getZoom(), 11), { duration: .6 }); setTimeout(() => p._m.openPopup(), 650); });
-  fm.addEventListener('change', () => { state.mun = fm.value; render(); });
+  fm.addEventListener('change', () => { state.mun = fm.value; render(); try { history.replaceState(null, '', '#mapa' + (state.mun ? '/' + MUN[state.mun].slug : '')); } catch (e) {} });
   $('#f-sit').addEventListener('change', e => { state.sit = e.target.value; render(); });
   $('#f-cats').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on); if (on) state.cats.add(b.dataset.cat); else state.cats.delete(b.dataset.cat); render(); });
   render();
 
   /* ---------- Evolução ---------- */
-  const lotesHtml = D.lotes_entrega.map(l => { const ps = prod.filter(p => p.lote_entrega === l.data); const d = daysTo(l.data); const avg = ps.length ? Math.round(ps.reduce((s,p)=>s+p.pct,0)/ps.length) : 0; return `<div class="lote"><div class="d">${esc(fmtD(l.data))}</div><div class="left">${d >= 0 ? `faltam ${d} dias` : `${-d} dias atrás`} · média ${avg}%</div><ul>${ps.map(p => `<li><span>${esc(p.municipio.nome)}</span><span class="bar"><i class="c" style="width:${100*p.n_concluidos/Math.max(1,p.n_itens)}%"></i><i class="a" style="width:${100*p.n_andamento/Math.max(1,p.n_itens)}%"></i></span><span class="num muted" style="text-align:right">${p.pct}%</span></li>`).join('')}</ul></div>`; }).join('');
+  // lotes: sem contagem regressiva depois da data (só "faltam N dias" antes dela e quantos já foram entregues)
+  const lotesHtml = D.lotes_entrega.map(l => { const ps = prod.filter(p => p.lote_entrega === l.data); const d = daysTo(l.data); const nE = ps.filter(isEntregue).length; return `<div class="lote"><div class="d">${esc(fmtD(l.data))}</div><div class="left">${d >= 0 ? `faltam ${d} dias` : 'em andamento'}${nE ? ` · ${nE} de ${ps.length} entregue${nE > 1 ? 's' : ''}` : ''}</div><ul>${ps.map(p => `<li><span>${esc(p.municipio.nome)}</span><span class="bar"><i class="c" style="width:${100*p.n_concluidos/Math.max(1,p.n_itens)}%"></i><i class="a" style="width:${100*p.n_andamento/Math.max(1,p.n_itens)}%"></i></span><span class="num muted" style="text-align:right">${pctHtml(p)}</span></li>`).join('')}</ul></div>`; }).join('');
   $('#lotes').innerHTML = lotesHtml;
   $('#evo-kpis').innerHTML = [
-    [prod.length, 'projetos em produção', `${comCU.length} com tarefas abertas no ClickUp`],
+    [prodAtivos.length, 'projetos em produção', `${ENT.length ? plural(ENT.length, 'entregue', 'entregues') + ' · ' : ''}${comCU.length} com tarefas abertas no ClickUp`],
     [pctMedio + '%', 'andamento médio das prioridades 1', `peso ½ para tarefas em desenvolvimento`],
     [cnt('concluido'), 'tarefas concluídas', `de ${allItems.length} tarefas de projeto`],
     [cnt('andamento') + cnt('aguardando'), 'em desenvolvimento', `${cnt('aguardando')} aguardando dados das prefeituras`]
@@ -701,9 +918,19 @@ function start(D){
   $('#st-legend').innerHTML = `<span><i style="--c:${tok('--st-conc')}"></i> concluída</span><span><i style="--c:${tok('--st-and')}"></i> em desenvolvimento</span><span><i style="--c:${tok('--st-agu')}"></i> aguardando</span><span><i style="--c:${tok('--st-pend')}"></i> pendente</span>`;
 
   const rows = comCU.slice().sort((a,b) => (a.lote_entrega || '9').localeCompare(b.lote_entrega || '9') || b.pct - a.pct);
-  $('#matrix').innerHTML = `<thead><tr><th>Projeto</th>${GRUPOS.map(([g,l]) => `<th>${esc(l)}</th>`).join('')}<th>Total</th></tr></thead><tbody>${rows.map(p => `<tr><td><span class="pn">${esc(p.nome)}</span><span class="pm">${esc(p.municipio.nome)}${p.lote_entrega ? ' · ' + fmtDs(p.lote_entrega) : ''}${p.situacao==='paralisado' ? ' · paralisado' : ''}</span></td>${GRUPOS.map(([g]) => { const it = (p.disciplinas||[]).filter(i => i.grupo === g); if (!it.length) return `<td><span class="cell empty"><i></i></span></td>`; return `<td><span class="cell" title="${esc(it.map(i => i.nome + ' — ' + STL[i.status] + (i.responsaveis && i.responsaveis.length ? ' (' + i.responsaveis.join(', ') + ')' : '')).join('\n'))}">${it.map(i => `<i class="${STC[i.status]}"></i>`).join('')}</span></td>`; }).join('')}<td class="pct-cell num">${p.pct}%</td></tr>`).join('')}</tbody>`;
+  $('#matrix').innerHTML = `<thead><tr><th>Projeto</th>${GRUPOS.map(([g,l]) => `<th>${esc(l)}</th>`).join('')}<th>Total</th></tr></thead><tbody>${rows.map(p => `<tr><td><span class="pn">${esc(p.nome)}</span><span class="pm">${esc(p.municipio.nome)}${p.lote_entrega ? ' · ' + fmtDs(p.lote_entrega) : ''}${p.situacao==='paralisado' ? ' · paralisado' : ''}</span></td>${GRUPOS.map(([g]) => { const it = (p.disciplinas||[]).filter(i => i.grupo === g); if (!it.length) return `<td><span class="cell empty"><i></i></span></td>`; return `<td><span class="cell" title="${esc(it.map(i => i.nome + ' — ' + STL[i.status] + (i.responsaveis && i.responsaveis.length ? ' (' + i.responsaveis.join(', ') + ')' : '')).join('\n'))}">${it.map(i => `<i class="${STC[i.status]}"></i>`).join('')}</span></td>`; }).join('')}<td class="pct-cell num">${pctHtml(p)}</td></tr>`).join('')}</tbody>`;
 
-  $('#proj-cards').innerHTML = prod.slice().sort((a,b) => b.pct - a.pct).map(p => `<div class="pcard"><header><div><span class="mun">${esc(p.municipio.nome)} · ${esc(CATS[p.categoria]||'')}</span><b>${esc(p.nome)}</b></div><span class="pct num">${p.pct}%</span></header><div class="bar"><i class="c" style="width:${100*p.n_concluidos/Math.max(1,p.n_itens)}%"></i><i class="a" style="width:${100*p.n_andamento/Math.max(1,p.n_itens)}%"></i></div><div class="muted" style="font-size:.85rem">${p.lote_entrega ? 'Entrega prevista ' + fmtD(p.lote_entrega) + ' · ' : ''}${p.responsaveis && p.responsaveis.length ? 'Equipe: ' + esc(p.responsaveis.map(r => r.split(' ')[0]).join(', ')) : ''}</div><div style="margin-top:6px">${cpxChip(p)}</div><details><summary>${p.n_itens} disciplinas</summary><ul>${(p.disciplinas||[]).slice().sort((a,b) => GRUPOS.findIndex(g=>g[0]===a.grupo) - GRUPOS.findIndex(g=>g[0]===b.grupo)).map(i => `<li><i class="${STC[i.status]}"></i><span>${esc(i.nome)}${i.responsaveis && i.responsaveis.length ? ` <small>· ${esc(i.responsaveis.map(r=>r.split(' ')[0]).join(', '))}</small>` : ''}</span><small>${esc(STL[i.status])}</small></li>`).join('')}</ul></details>${p.fisico && p.fisico.descricao ? `<div class="muted" style="font-size:.84rem;margin-top:8px">${esc(p.fisico.descricao)}</div>` : ''}${acervoHtml(p)}${galHtml(p)}</div>`).join('');
+  // cartão de projeto (Evolução e páginas dos municípios). Data de entrega só aparece enquanto está no futuro.
+  const prazoTxt = p => isEntregue(p) ? `Entregue em ${fmtD(entregueEm(p))}` : (p.lote_entrega && daysTo(p.lote_entrega) >= 0 ? `Entrega prevista ${fmtD(p.lote_entrega)}` : '');
+  const curtos = lista => { const pri = lista.map(r => String(r).trim().split(/\s+/)[0]); return lista.map((r, i) => { const ps = String(r).trim().split(/\s+/); return pri.filter(x => x === pri[i]).length > 1 && ps.length > 1 ? `${ps[0]} ${ps[ps.length - 1][0]}.` : ps[0]; }); };
+  const equipeTxt = p => p.responsaveis && p.responsaveis.length ? 'Equipe: ' + curtos(p.responsaveis).join(', ') : '';
+  const discLista = p => `<details><summary>${plural(p.n_itens, 'disciplina', 'disciplinas')}</summary><ul>${(p.disciplinas||[]).slice().sort((a,b) => GRUPOS.findIndex(g=>g[0]===a.grupo) - GRUPOS.findIndex(g=>g[0]===b.grupo)).map(i => `<li><i class="${STC[i.status]}"></i><span>${esc(i.nome)}${i.responsaveis && i.responsaveis.length ? ` <small>· ${esc(i.responsaveis.map(r=>r.split(' ')[0]).join(', '))}</small>` : ''}</span><small>${esc(STL[i.status])}</small></li>`).join('')}</ul></details>`;
+  function pcardHtml(p, o = {}){
+    const info = [prazoTxt(p), equipeTxt(p)].filter(Boolean).join(' · ');
+    const chips = cpxChip(p) + (o.valor && p.valor_obra ? `<span class="chip">obra ${esc(fmtBRL(p.valor_obra))}</span>` : '');
+    return `<div class="pcard"><header><div><span class="mun">${o.semMun ? '' : esc(p.municipio.nome) + ' · '}${esc(CATS[p.categoria]||'')}</span><b>${esc(p.nome)}</b></div><span class="pct num">${pctHtml(p)}</span></header><div class="bar"><i class="c" style="width:${100*p.n_concluidos/Math.max(1,p.n_itens)}%"></i><i class="a" style="width:${100*p.n_andamento/Math.max(1,p.n_itens)}%"></i></div>${info ? `<div class="muted" style="font-size:.85rem">${esc(info)}</div>` : ''}${chips ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px">${chips}</div>` : ''}${o.desc && p.descricao ? `<p class="muted" style="font-size:.86rem;margin-top:8px">${esc(p.descricao)}</p>` : ''}${p.n_itens ? discLista(p) : ''}${p.fisico && p.fisico.descricao ? `<div class="muted" style="font-size:.84rem;margin-top:8px">${esc(p.fisico.descricao)}</div>` : ''}${o.gal ? acervoHtml(p) + galHtml(p) : ''}</div>`;
+  }
+  $('#proj-cards').innerHTML = prod.slice().sort((a,b) => b.pct - a.pct).map(p => pcardHtml(p, { gal: true })).join('');
 
   /* ---------- Indicadores físicos ---------- */
   const fisP = P.filter(p => p.fisico && p.situacao !== 'cancelado');
@@ -830,10 +1057,12 @@ function start(D){
   D.municipios.forEach(m => byMun[m.nome] = { m, th: [], docs: [] });
   threads.forEach(t => { const k = Object.keys(byMun).find(n => n.toLowerCase().startsWith(t.municipio.toLowerCase().slice(0,8))); if (k) byMun[k].th.push(t); });
   (D.demandas_formalizadas||[]).forEach(d => { const m = MUN[d.sigla]; if (m && byMun[m.nome]) byMun[m.nome].docs.push(d); });
-  $('#form-list').innerHTML = Object.values(byMun).sort((a,b) => (b.th.length + b.docs.length) - (a.th.length + a.docs.length) || a.m.nome.localeCompare(b.m.nome)).map(({m, th, docs}) => {
+  // bloco de um município (lista desta página e página do município, onde já abre aberto)
+  const formMunHtml = ({m, th, docs}, aberto) => {
     const ag = th.filter(t => t.status === 'aguardando_resposta').length;
-    return `<details class="form-mun"><summary><div><b>${esc(m.nome)}</b> <span class="muted" style="font-size:.9rem">· ${th.length} conversa${th.length===1?'':'s'} · ${docs.length} documento${docs.length===1?'':'s'}</span></div><div class="cnt">${ag ? `<span class="chip st-andamento"><i class="dot"></i>${ag} aguardando</span>` : ''}${m.situacao === 'paralisado' ? `<span class="chip sit-paralisado"><i class="dot"></i>paralisado</span>` : ''}</div></summary><div class="form-body">${th.sort((a,b) => b.ultima_atividade.localeCompare(a.ultima_atividade)).map(t => `<div class="thread"><div class="th"><b>${esc(t.assunto)}</b><div><span class="chip">${esc(TIPO[t.tipo]||t.tipo)}</span> <span class="chip ${FST[t.status] ? FST[t.status][1] : ''}"><i class="dot"></i>${esc(FST[t.status] ? FST[t.status][0] : t.status)}</span></div></div><div class="meta">Última atividade ${esc(fmtD(t.ultima_atividade))}${t.obs ? ' · ' + esc(t.obs) : ''}</div><ul class="msgs">${t.mensagens.filter(x => !/^confirma..o de leitura/i.test(x.resumo || '')).map(x => `<li><span class="dt">${esc(fmtD(x.data))}</span><span class="ar ${x.direcao === 'enviado' ? 'env' : 'rec'}" title="${x.direcao === 'enviado' ? 'Enviado pela Usina' : 'Recebido da prefeitura'}">${x.direcao === 'enviado' ? '→' : '←'}</span><span>${esc(x.resumo)}${x.anexos && x.anexos.length ? ` <small>· ${x.anexos.length} anexo${x.anexos.length===1?'':'s'}</small>` : ''}</span></li>`).join('')}</ul></div>`).join('')}${docs.length ? `<div class="thread"><div class="th"><b>Documentos de formalização recebidos</b></div><ul class="docs">${docs.map(d => `<li><span>${esc(fmtD(d.data))}</span><span>${esc(d.documento)}</span></li>`).join('')}</ul></div>` : ''}${!th.length && !docs.length ? '<p class="muted" style="padding:12px 0">Sem registros formais por e-mail até o momento.</p>' : ''}</div></details>`;
-  }).join('');
+    return `<details class="form-mun"${aberto ? ' open' : ''}><summary><div><b>${esc(m.nome)}</b> <span class="muted" style="font-size:.9rem">· ${th.length} conversa${th.length===1?'':'s'} · ${docs.length} documento${docs.length===1?'':'s'}</span></div><div class="cnt">${ag ? `<span class="chip st-andamento"><i class="dot"></i>${ag} aguardando</span>` : ''}${m.situacao === 'paralisado' ? `<span class="chip sit-paralisado"><i class="dot"></i>paralisado</span>` : ''}</div></summary><div class="form-body">${th.sort((a,b) => b.ultima_atividade.localeCompare(a.ultima_atividade)).map(t => `<div class="thread"><div class="th"><b>${esc(t.assunto)}</b><div><span class="chip">${esc(TIPO[t.tipo]||t.tipo)}</span> <span class="chip ${FST[t.status] ? FST[t.status][1] : ''}"><i class="dot"></i>${esc(FST[t.status] ? FST[t.status][0] : t.status)}</span></div></div><div class="meta">Última atividade ${esc(fmtD(t.ultima_atividade))}${t.obs ? ' · ' + esc(t.obs) : ''}</div><ul class="msgs">${t.mensagens.filter(x => !/^confirma..o de leitura/i.test(x.resumo || '')).map(x => `<li><span class="dt">${esc(fmtD(x.data))}</span><span class="ar ${x.direcao === 'enviado' ? 'env' : 'rec'}" title="${x.direcao === 'enviado' ? 'Enviado pela Usina' : 'Recebido da prefeitura'}">${x.direcao === 'enviado' ? '→' : '←'}</span><span>${esc(x.resumo)}${x.anexos && x.anexos.length ? ` <small>· ${x.anexos.length} anexo${x.anexos.length===1?'':'s'}</small>` : ''}</span></li>`).join('')}</ul></div>`).join('')}${docs.length ? `<div class="thread"><div class="th"><b>Documentos de formalização recebidos</b></div><ul class="docs">${docs.map(d => `<li><span>${esc(fmtD(d.data))}</span><span>${esc(d.documento)}</span></li>`).join('')}</ul></div>` : ''}${!th.length && !docs.length ? '<p class="muted" style="padding:12px 0">Sem registros formais por e-mail até o momento.</p>' : ''}</div></details>`;
+  };
+  $('#form-list').innerHTML = Object.values(byMun).sort((a,b) => (b.th.length + b.docs.length) - (a.th.length + a.docs.length) || a.m.nome.localeCompare(b.m.nome)).map(x => formMunHtml(x)).join('');
 
   /* ---------- Equipe ---------- */
   const groups = [['Coordenação e captação', e => /Coordenador|Captação/i.test(e.funcao)], ['Arquitetura e urbanismo', e => /Arquitet/.test(e.profissao)], ['Engenharia', e => /Engenheir/.test(e.profissao) && !/Coordenador/.test(e.funcao)], ['Apoio técnico e administrativo', e => /Desenhista|Administrativo/.test(e.profissao)]];
@@ -841,6 +1070,96 @@ function start(D){
   const card = e => `<div class="member"><span class="rail" aria-hidden="true"></span><div class="in"><b class="nm">${esc(e.nome)}</b><span class="role">${esc(e.funcao)}${e.profissao && !/^(Engenheiro civil|Arquitet[ao] e urbanista)$/.test(e.profissao) && e.profissao !== e.funcao && !/Captação|Desenhista|Administrativo/.test(e.profissao) ? ' · ' + esc(e.profissao) : ''}</span>${e.sem_registro ? '' : `<span class="reg ${e.conselho ? '' : 'todo'}">${e.conselho ? esc(e.conselho) : 'Registro profissional: a informar'}</span>`}<div class="ct">${e.telefone ? `<div><a class="wa" href="https://wa.me/55${e.telefone.replace(/\D/g, '')}" target="_blank" rel="noopener" title="Conversar no WhatsApp" aria-label="WhatsApp de ${esc(e.nome)}: ${esc(e.telefone)}">${WA_ICON}<span class="num">${esc(e.telefone)}</span></a><button class="copy" data-copy="${esc(e.telefone)}" aria-label="Copiar telefone">copiar</button></div>` : ''}${e.email ? `<div><span>${esc(e.email)}</span><button class="copy" data-copy="${esc(e.email)}" aria-label="Copiar e-mail">copiar</button></div>` : ''}</div>${e.especialidades && e.especialidades.length ? `<div class="sp">${e.especialidades.map(s => `<span>${esc(s)}</span>`).join('')}</div>` : ''}</div></div>`;
   $('#team').innerHTML = groups.map(([t, f]) => { const ms = D.equipe.filter(f).sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR')); return ms.length ? `<h3 class="team-sub">${esc(t)} <span class="muted" style="font-weight:400;font-size:.9rem">· ${ms.length}</span></h3><div class="team-grid">${ms.map(card).join('')}</div>` : ''; }).join('') + `<h3 class="team-sub">Conselho dos Lindeiros</h3><div class="team-grid"><div class="member"><span class="rail"></span><div class="in"><b class="nm">Antônio França Benjamim</b><span class="role">Presidente do Conselho · Prefeito de Medianeira</span></div></div><div class="member"><span class="rail"></span><div class="in"><b class="nm">Gileade Osti</b><span class="role">Vice-presidente · Prefeito de Guaíra</span></div></div><div class="member"><span class="rail"></span><div class="in"><b class="nm">Sandra Finkler</b><span class="role">Diretora técnica do Conselho</span><div class="ct"><div><span>conselho@lindeiros.org.br</span><button class="copy" data-copy="conselho@lindeiros.org.br" aria-label="Copiar e-mail">copiar</button></div><div><span class="num">(45) 3268-2489</span></div></div></div></div></div>`;
   document.addEventListener('click', e => { const b = e.target.closest('.copy'); if (!b) return; const txt = b.dataset.copy; const done = () => { b.textContent = 'copiado'; b.classList.add('ok'); setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('ok'); }, 1500); }; if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done).catch(() => { const r = document.createRange(); r.selectNodeContents(b.previousElementSibling); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }); else { const r = document.createRange(); r.selectNodeContents(b.previousElementSibling); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } });
+
+  /* ---------- Municípios (menu, visão geral e página de cada um) ---------- */
+  const MUNS = D.municipios.slice().sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  const MUNSLUG = Object.fromEntries(MUNS.map(m => [m.slug, m]));
+  const UF = { PR: 'Paraná', MS: 'Mato Grosso do Sul' };
+  const resumoMun = m => { const ps = ativos.filter(p => p.sigla === m.sigla); return { ps, pr: ps.filter(p => p.situacao === 'producao' && !isEntregue(p)), en: ps.filter(isEntregue) }; };
+  const entTxt = n => n ? ` · ${plural(n, 'entregue', 'entregues')}` : '';
+  const resumoTxt = r => [plural(r.ps.length, 'demanda', 'demandas'), r.pr.length ? `${r.pr.length} em produção` : '', r.en.length ? plural(r.en.length, 'entregue', 'entregues') : ''].filter(Boolean).join(' · ');
+  $('#dd-mun-list').innerHTML = MUNS.map(m => { const r = resumoMun(m); return `<a href="#municipio/${esc(m.slug)}" data-mun="${esc(m.slug)}"><b>${esc(m.nome)}</b>${m.situacao === 'paralisado' ? '<small class="par">projetos paralisados</small>' : `<small>${resumoTxt(r)}</small>`}</a>`; }).join('') + '<a class="todos" href="#municipios">Ver todos os municípios ›</a>';
+
+  const popTotal = D.municipios.reduce((s,m) => s + (m.populacao || 0), 0);
+  $('#muns-kpis').innerHTML = [
+    [D.municipios.length, 'municípios lindeiros', `${D.municipios.filter(m => m.uf === 'PR').length} no Paraná · ${D.municipios.filter(m => m.uf === 'MS').length} no Mato Grosso do Sul`],
+    [fmtInt(popTotal), 'habitantes', 'Censo 2022 (IBGE)'],
+    [ativos.length, 'demandas cadastradas', `${prodAtivos.length} em produção${entTxt(ENT.length)}`],
+    [fmtBRL1(somaValorObra(ativos)), 'em obras demandadas', 'valores estimados pelas prefeituras']
+  ].map(kpiHtml).join('');
+  // andamento das disciplinas dos projetos ativos do município (paralisados ficam de fora)
+  const discMun = ps => { const l = ps.filter(p => p.situacao !== 'paralisado' && p.n_itens > 0); const n = l.reduce((s,p) => s + p.n_itens, 0), c = l.reduce((s,p) => s + p.n_concluidos, 0), a = l.reduce((s,p) => s + p.n_andamento, 0); return { n, c, a }; };
+  $('#muns-grid').innerHTML = MUNS.map(m => {
+    const r = resumoMun(m), d = discMun(r.ps), par = m.situacao === 'paralisado';
+    const rod = par ? 'produção suspensa' : d.n ? (d.c ? `${d.c} de ${d.n} disciplinas concluídas` : `${plural(d.n, 'disciplina planejada', 'disciplinas planejadas')}`) : (r.ps.length ? 'aguardando o início da produção' : 'sem demandas cadastradas');
+    return `<a class="mcard" href="#municipio/${esc(m.slug)}"><span class="uf">${esc(UF[m.uf] || m.uf)}</span><b>${esc(m.nome)}</b><span class="meta">${fmtInt(m.populacao)} habitantes · ${plural(r.ps.length, 'demanda', 'demandas')}</span>${par ? '<span class="meta par">Projetos paralisados</span>' : (r.pr.length || r.en.length) ? `<span class="meta">${[r.pr.length ? r.pr.length + ' em produção' : '', r.en.length ? plural(r.en.length, 'entregue', 'entregues') : ''].filter(Boolean).join(' · ')}</span>` : ''}${d.n && !par ? `<div class="bar"><i class="c" style="width:${100*d.c/d.n}%"></i><i class="a" style="width:${100*d.a/d.n}%"></i></div>` : ''}<span class="rodape"><span>${rod}</span><span aria-hidden="true">ver ›</span></span></a>`;
+  }).join('');
+
+  const ORD_SIT = { producao: 0, fila: 1, banco: 2, paralisado: 3 };
+  const reEsc = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const demHtml = p => `<div class="dem"><span class="muted" style="font-size:.8rem;display:block;margin-bottom:4px">${esc(CATS[p.categoria] || '')}</span><b>${esc(p.nome)}</b><div class="chips"><span class="chip sit-${esc(p.situacao)}"><i class="dot"></i>${esc(SIT[p.situacao] || p.situacao)}</span>${p.prioridade ? `<span class="chip">prioridade ${esc(p.prioridade)}</span>` : ''}${p.valor_obra ? `<span class="chip">obra ${esc(fmtBRL(p.valor_obra))}</span>` : ''}</div>${p.descricao ? `<p>${esc(p.descricao)}</p>` : ''}</div>`;
+  function paginaMunicipio(m){
+    const r = resumoMun(m), d = discMun(r.ps), par = m.situacao === 'paralisado';
+    const i = MUNS.indexOf(m), ant = MUNS[(i - 1 + MUNS.length) % MUNS.length], prox = MUNS[(i + 1) % MUNS.length];
+    const outros = r.ps.filter(p => !r.pr.includes(p) && !r.en.includes(p)).sort((a,b) => (ORD_SIT[a.situacao] ?? 9) - (ORD_SIT[b.situacao] ?? 9) || (a.prioridade || 9) - (b.prioridade || 9) || a.nome.localeCompare(b.nome));
+    const comValor = r.ps.filter(p => p.valor_obra);
+    const lote = (D.lotes_entrega || []).find(l => (l.siglas || []).includes(m.sigla) && daysTo(l.data) >= 0);
+    const re = new RegExp(reEsc(m.nome), 'i');
+    const tl = crono.filter(e => re.test(e.titulo + ' ' + e.texto));
+    const im = (D.imprensa || []).filter(x => re.test(x.titulo + ' ' + (x.veiculo || '')));
+    const lead = `${plural(r.ps.length, 'demanda cadastrada', 'demandas cadastradas')} na Usina de Projetos${r.pr.length ? ` · ${r.pr.length} em produção` : ''}${entTxt(r.en.length)}.${lote ? ` Meta de entrega da prioridade 1: ${fmtD(lote.data)}.` : ''}`;
+    const info = [
+      ['Prefeito(a)', esc(m.prefeito || '—')],
+      ['Ponto focal na prefeitura', esc(m.ponto_focal || 'a definir')],
+      ['Técnicos de referência na Usina', esc((m.usina || []).join(', ') || '—')],
+      ['Área territorial', m.area_km2 ? esc(m.area_km2.toLocaleString('pt-BR', { maximumFractionDigits: 1 })) + ' km²' : '—']
+    ];
+    const kp = [
+      [r.ps.length, r.ps.length === 1 ? 'demanda cadastrada' : 'demandas cadastradas', par ? 'projetos paralisados' : [r.pr.length ? `${r.pr.length} em produção` : '', r.en.length ? plural(r.en.length, 'entregue', 'entregues') : '', !r.pr.length && !r.en.length ? 'aguardando produção' : ''].filter(Boolean).join(' · ')],
+      par ? ['—', 'produção suspensa', 'até a regularização com o Conselho'] : d.c ? [d.c, d.c === 1 ? 'disciplina concluída' : 'disciplinas concluídas', [d.a ? `${d.a} em desenvolvimento` : '', `${d.n} no total`].filter(Boolean).join(' · ')] : [d.n, 'disciplinas planejadas', d.n ? 'nos projetos em produção' : 'quando a produção começar'],
+      [comValor.length ? fmtBRL1(somaValorObra(comValor)) : '—', 'em obras demandadas', comValor.length ? `${plural(comValor.length, 'projeto com valor informado', 'projetos com valor informado')}` : 'valores a informar pela prefeitura'],
+      [fmtInt(m.populacao), 'habitantes', 'Censo 2022 (IBGE)']
+    ];
+    const blocoTl = tl.length ? `<div class="card"><h3>Linha do tempo</h3><ul class="mini-tl">${tl.map(e => `<li><span class="d">${esc(fmtD(e.data))}</span><div><b>${esc(e.titulo)}</b><br><span>${esc(e.texto)}</span></div></li>`).join('')}</ul></div>` : '';
+    const blocoIm = im.length ? `<div class="card"><h3>Na imprensa</h3><ul class="press" style="grid-template-columns:1fr">${im.map(n => `<li><span class="d">${esc(fmtD(n.data))}</span><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.titulo)}</a><span class="v">${esc(n.veiculo)}</span></li>`).join('')}</ul></div>` : '';
+    $('#mun-page').innerHTML = `<nav class="crumbs" aria-label="Você está em"><a href="#inicio">Início</a> › <a href="#municipios">Municípios</a> › ${esc(m.nome)}</nav>
+      <div class="sec-head"><span class="rail" aria-hidden="true"></span><div><p class="eyebrow">Município lindeiro · ${esc(UF[m.uf] || m.uf)}</p><h2>${esc(m.nome)}</h2><p class="lead">${esc(lead)}</p></div></div>
+      ${par ? `<p class="aviso-par">${esc(m.observacao || 'Projetos paralisados.')}</p>` : ''}
+      <div class="kpis k4">${kp.map(k => kpiHtml(k)).join('')}</div>
+      <div class="info-grid">${info.map(([l,v]) => `<div class="info"><span>${esc(l)}</span><b>${v}</b></div>`).join('')}</div>
+      <div class="cta" style="margin-top:14px"><a class="btn s" href="#mapa/${esc(m.slug)}">Ver no mapa</a>${m.site ? `<a class="btn s" href="${esc(m.site)}" target="_blank" rel="noopener">Site da prefeitura ↗</a>` : ''}${byMun[m.nome] && (byMun[m.nome].th.length || byMun[m.nome].docs.length) ? '<a class="btn s" href="#mun-form" data-rolar="mun-form">Formalizações</a>' : ''}</div>
+      ${r.en.length ? `<h3 class="sub-h">Projetos entregues</h3><p class="sub-p">Prontos para a prefeitura captar recursos e licitar a obra.</p><div class="proj-cards">${r.en.map(p => pcardHtml(p, { semMun: true, valor: true, desc: true })).join('')}</div>` : ''}
+      ${r.pr.length ? `<h3 class="sub-h">Em produção</h3><p class="sub-p">Andamento das disciplinas no mural de tarefas da equipe.</p><div class="proj-cards">${r.pr.map(p => pcardHtml(p, { semMun: true, valor: true, desc: true })).join('')}</div>` : ''}
+      ${outros.length ? `<h3 class="sub-h">${r.pr.length || r.en.length ? 'Demais demandas' : 'Demandas cadastradas'}</h3><p class="sub-p">Na fila de produção, no banco de projetos ou paralisadas.</p><div class="dem-list">${outros.map(demHtml).join('')}</div>` : ''}
+      <h3 class="sub-h" id="mun-form">Formalizações com a prefeitura</h3><p class="sub-p">Ofícios, pedidos de documentação e entregas registrados pelo e-mail oficial da Usina.</p><div style="margin-top:12px">${byMun[m.nome] ? formMunHtml(byMun[m.nome], true) : ''}</div>
+      ${blocoTl || blocoIm ? `<div class="${blocoTl && blocoIm ? 'twocol' : ''}" style="margin-top:${blocoTl && blocoIm ? '24px' : '24px'}">${blocoTl}${blocoIm}</div>` : ''}
+      <div class="mun-nav"><a class="btn s" href="#municipio/${esc(ant.slug)}">‹ ${esc(ant.nome)}</a><a class="btn s" href="#municipios">Todos os municípios</a><a class="btn s" href="#municipio/${esc(prox.slug)}">${esc(prox.nome)} ›</a></div>`;
+  }
+  // botão "Formalizações" da página do município: rola até o bloco sem trocar o endereço
+  document.addEventListener('click', e => { const a = e.target.closest('a[data-rolar]'); if (!a) return; e.preventDefault(); const alvo = document.getElementById(a.dataset.rolar); if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+
+  /* ---------- Entregues ---------- */
+  const munsEnt = new Set(ENT.map(p => p.sigla));
+  const proxEnt = prodAtivos.slice().sort((a,b) => (a.lote_entrega || '9999').localeCompare(b.lote_entrega || '9999') || b.pct - a.pct);
+  $('#ent-kpis').innerHTML = [
+    [ENT.length, ENT.length === 1 ? 'projeto entregue' : 'projetos entregues', ENT.length ? plural(munsEnt.size, 'município atendido', 'municípios atendidos') : 'os primeiros saem nos lotes de entrega', ''],
+    [ENT.reduce((s,p) => s + (p.n_itens || 0), 0), 'disciplinas entregues', 'pranchas, memoriais e orçamentos'],
+    [fmtInt([...munsEnt].reduce((s,sg) => s + ((MUN[sg] || {}).populacao || 0), 0)), 'habitantes nos municípios atendidos', 'Censo 2022 (IBGE)'],
+    [proxEnt.length, 'próximos a entregar', 'projetos em produção']
+  ].map(kpiHtml).join('');
+  $('#ent-pipe').innerHTML = ETAPAS.map(([k,l]) => { const c = ENT.filter(p => etapaEntrega(p) === k).length; return `<div class="${c ? 'on' : ''}"><b class="num">${c}</b><span>${esc(l)}</span></div>`; }).join('');
+  $('#ent-cards').innerHTML = ENT.length ? ENT.map(p => {
+    const k = ETAPAS.findIndex(e => e[0] === etapaEntrega(p));
+    const grupos = [...new Set((p.disciplinas || []).slice().sort((a,b) => GRUPOS.findIndex(g => g[0] === a.grupo) - GRUPOS.findIndex(g => g[0] === b.grupo)).map(x => GL[x.grupo] || x.grupo))];
+    return `<div class="pcard"><header><div><span class="mun"><a href="#municipio/${esc(p.municipio.slug)}" style="color:inherit">${esc(p.municipio.nome)}</a> · ${esc(CATS[p.categoria] || '')}</span><b>${esc(p.nome)}</b></div><span class="pct"><span class="etapa ok">✓ entregue</span></span></header>
+      <div class="muted" style="font-size:.85rem;margin-top:6px">${esc(['Concluído em ' + fmtD(entregueEm(p)), equipeTxt(p)].filter(Boolean).join(' · '))}</div>
+      ${p.valor_obra ? `<div style="margin-top:6px"><span class="chip">obra ${esc(fmtBRL(p.valor_obra))}</span></div>` : ''}
+      ${p.descricao ? `<p class="muted" style="font-size:.86rem;margin-top:8px">${esc(p.descricao)}</p>` : ''}
+      ${grupos.length ? `<p style="font-size:.86rem;margin-top:8px"><b>${plural(p.n_itens || grupos.length, 'disciplina entregue', 'disciplinas entregues')}:</b> ${esc(grupos.join(' · '))}</p>` : ''}
+      <div class="trk" aria-hidden="true">${ETAPAS.map((e, j) => `<i class="${j <= k ? 'on' : ''}"></i>`).join('')}</div>
+      <div class="trk-l">Etapa atual: <b>${esc(ETAPAS[k][1])}</b>${p.entrega && p.entrega.obs ? ' · ' + esc(p.entrega.obs) : ''}</div></div>`;
+  }).join('') : '<div class="vazio">Os primeiros projetos entregues aparecem aqui assim que todas as disciplinas forem concluídas.</div>';
+  $('#ent-prox').innerHTML = proxEnt.map(p => { const fut = p.lote_entrega && daysTo(p.lote_entrega) >= 0; return `<li><a href="#municipio/${esc(p.municipio.slug)}"><b>${esc(p.nome)}</b><small>${esc(p.municipio.nome)}</small></a><span class="q">${fut ? 'meta ' + esc(fmtD(p.lote_entrega)) : p.lote_entrega ? 'em andamento' : 'meta a definir'}</span><span class="bar"><i class="c" style="width:${100*p.n_concluidos/Math.max(1,p.n_itens)}%"></i><i class="a" style="width:${100*p.n_andamento/Math.max(1,p.n_itens)}%"></i></span><span class="n num">${pctHtml(p)}</span></li>`; }).join('');
 
   /* data e hora de cada robô no horário de Brasília (só a data quando o robô ainda não gravou o horário) */
   const quando = (iso, dia) => { if (iso) { const t = new Date(iso); if (!isNaN(t)) { const f = o => new Intl.DateTimeFormat('pt-BR', Object.assign({ timeZone: 'America/Sao_Paulo' }, o)).format(t); return `${f({ day: '2-digit', month: '2-digit', year: 'numeric' })} às ${f({ hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', 'h')}`; } } return dia ? fmtD(dia) : 'sem registro'; };
@@ -853,27 +1172,94 @@ function start(D){
   if (siteUrl && window.qrcode) { try { const q = qrcode(0, 'M'); q.addData(siteUrl); q.make(); $('#qr').innerHTML = q.createImgTag(4, 2); $('#qr-url').textContent = siteUrl.replace(/^https?:\/\//, ''); } catch (e) { $('#qr-url').textContent = siteUrl; } }
   else { $('#qr-url').textContent = siteUrl ? siteUrl : 'O QR code aparece quando o site estiver publicado na internet.'; }
 
-  /* ---------- Modo apresentação ---------- */
-  const secIds = ['inicio','mapa','evolucao','financeiro','formalizacoes','equipe'];
+  /* ---------- Medição de visitas (GoatCounter: anônima, sem cookies e sem dados pessoais) ---------- */
+  // Conta cada página aberta (/, /mapa, /municipio/mundo-novo…), só no site publicado — nunca no computador local.
+  // Navegadores da equipe ficam fora da contagem: endereço #nao-contar (e #contar para voltar) ou login no Relatório.
+  const GC_COUNT = 'https://usinadeprojetos.goatcounter.com/count';
+  function contarVisita(caminho, primeira){
+    try {
+      if (!navigator.sendBeacon || location.protocol !== 'https:' || !/(github\.io|lindeiros\.org\.br)$/i.test(location.hostname)) return;
+      if (document.visibilityState === 'prerender' || window.top !== window.self) return;
+      if (localStorage.getItem('skipgc') === 't') return;
+      const u = new URL(GC_COUNT);
+      u.searchParams.set('p', caminho);
+      u.searchParams.set('t', document.title);
+      if (primeira && document.referrer && !document.referrer.startsWith(location.origin)) u.searchParams.set('r', document.referrer);
+      u.searchParams.set('s', String(screen.width));
+      if (navigator.webdriver) u.searchParams.set('b', '153');
+      navigator.sendBeacon(u.href);
+    } catch (e) {}
+  }
+
+  /* ---------- Páginas: o endereço (#inicio, #mapa, #municipio/mundo-novo…) decide o que aparece ---------- */
+  const PG = { inicio: 'Início', municipios: 'Municípios', municipio: 'Município', mapa: 'Mapa dos projetos', evolucao: 'Evolução dos projetos', entregues: 'Projetos entregues', financeiro: 'Economia para os municípios', formalizacoes: 'Formalizações', equipe: 'Equipe técnica' };
+  function lerRota(){
+    let h = location.hash.replace(/^#/, ''); try { h = decodeURIComponent(h); } catch (e) {}
+    const [pg, arg] = h.split('/');
+    if (pg === 'municipio') return MUNSLUG[arg] ? { pg, arg } : { pg: 'municipios' };
+    if (pg === 'mapa') return { pg, arg: MUNSLUG[arg] ? arg : '' };
+    return PG[pg] ? { pg } : { pg: 'inicio' };
+  }
+  const topEl = $('.top'), menuBtn = $('#menu-btn'), dd = $('#dd-mun');
+  function fecharMenu(){ topEl.classList.remove('aberto'); menuBtn.setAttribute('aria-expanded', 'false'); menuBtn.setAttribute('aria-label', 'Abrir menu'); dd.classList.remove('open'); }
+  function mostrar(r){
+    if (r.pg === 'municipio') paginaMunicipio(MUNSLUG[r.arg]);
+    document.documentElement.setAttribute('data-pg', r.pg);
+    document.querySelectorAll('nav.menu a[data-pg]').forEach(a => a.classList.toggle('on', a.dataset.pg === r.pg || (r.pg === 'municipio' && a.dataset.pg === 'municipios')));
+    document.querySelectorAll('#dd-mun-list a[data-mun]').forEach(a => a.classList.toggle('on', r.pg === 'municipio' && a.dataset.mun === r.arg));
+    if (r.pg === 'mapa') mapaMunicipio(r.arg ? MUNSLUG[r.arg].sigla : '');
+    document.title = r.pg === 'inicio' ? 'Usina de Projetos · Lindeiros ao Lago de Itaipu' : `${r.pg === 'municipio' ? MUNSLUG[r.arg].nome : PG[r.pg]} · Usina de Projetos`;
+    fecharMenu();
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); }
+  }
+  // menu: botão ☰ no celular; "Municípios" abre a lista ao passar o mouse (computador) ou ao tocar (menu do celular)
+  const menuCel = () => matchMedia('(max-width:1099px)').matches;
+  menuBtn.addEventListener('click', () => { const ab = !topEl.classList.contains('aberto'); topEl.classList.toggle('aberto', ab); menuBtn.setAttribute('aria-expanded', String(ab)); menuBtn.setAttribute('aria-label', ab ? 'Fechar menu' : 'Abrir menu'); });
+  $('#menu').addEventListener('click', e => {
+    if (e.target.closest('#btn-export')) { fecharMenu(); return; }     // o Relatório abre por cima: o menu do celular fecha
+    const a = e.target.closest('a'); if (!a) return;
+    if (a.classList.contains('dd-t') && menuCel()) { e.preventDefault(); dd.classList.toggle('open'); return; }
+    if (dd.matches(':hover')) dd.classList.add('fecha');                 // fecha a lista logo após o clique, mesmo com o mouse em cima
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    if (a.getAttribute('href') === location.hash) { e.preventDefault(); mostrar(lerRota()); }   // mesma página: volta ao topo
+    else fecharMenu();
+  });
+  dd.addEventListener('mouseleave', () => dd.classList.remove('fecha'));
+  document.addEventListener('click', e => { if (topEl.classList.contains('aberto') && !e.target.closest('.top')) fecharMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && topEl.classList.contains('aberto')) fecharMenu(); });
+
+  /* ---------- Modo apresentação (#apresentacao): passa pelas páginas a cada 25 s ---------- */
+  const presPg = ['inicio','mapa','evolucao','entregues','financeiro','formalizacoes','equipe'];
   let presTimer = null, presIdx = 0, presPaused = false;
-  function presStep(){ if (presPaused) return; presIdx = (presIdx + 1) % secIds.length; document.getElementById(secIds[presIdx]).scrollIntoView({ behavior: 'smooth' }); $('#pres-status').textContent = `Apresentação · ${presIdx + 1}/${secIds.length}`; }
-  function presOn(){ document.body.classList.add('apresenta'); presIdx = 0; presPaused = false; $('#pres-pause').textContent = 'Pausar'; $('#pres-status').textContent = 'Apresentação · 1/6'; window.scrollTo({ top: 0 }); clearInterval(presTimer); presTimer = setInterval(presStep, 25000); setTimeout(() => map.invalidateSize(), 350); }
-  function presOff(){ document.body.classList.remove('apresenta'); clearInterval(presTimer); presTimer = null; setTimeout(() => map.invalidateSize(), 350); }
+  const presMostra = () => { mostrar({ pg: presPg[presIdx] }); $('#pres-status').textContent = `Apresentação · ${presIdx + 1}/${presPg.length}`; };
+  function presStep(){ if (presPaused) return; presIdx = (presIdx + 1) % presPg.length; presMostra(); }
+  function presOn(){ document.body.classList.add('apresenta'); presIdx = 0; presPaused = false; $('#pres-pause').textContent = 'Pausar'; presMostra(); clearInterval(presTimer); presTimer = setInterval(presStep, 25000); setTimeout(() => map.invalidateSize(), 350); }
+  function presFim(){ document.body.classList.remove('apresenta'); clearInterval(presTimer); presTimer = null; }
+  function presOff(){ presFim(); if (location.hash === '#apresentacao') { try { history.replaceState(null, '', '#inicio'); } catch (e) {} } mostrar(lerRota()); }
   const presBtn = $('#pres-on'); if (presBtn) presBtn.addEventListener('click', presOn);   // botão removido do menu (modo segue acessível por #apresentacao)
   $('#pres-off').addEventListener('click', presOff);
   $('#pres-pause').addEventListener('click', e => { presPaused = !presPaused; e.target.textContent = presPaused ? 'Continuar' : 'Pausar'; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('apresenta')) presOff(); });
-  if (location.hash === '#apresentacao') presOn();
 
-  /* altura real do cabeçalho fixo → âncoras do menu param logo abaixo dele */
+  /* altura real do cabeçalho fixo (o menu do celular abre logo abaixo dele) */
   const topo = document.querySelector('.top');
   const medeTopo = () => document.documentElement.style.setProperty('--topo-h', topo.offsetHeight + 'px');
   medeTopo(); if ('ResizeObserver' in window) new ResizeObserver(medeTopo).observe(topo); else addEventListener('resize', medeTopo);
 
-  /* nav ativa */
-  const links = [...document.querySelectorAll('nav.menu a')];
-  const secs = links.map(a => document.querySelector(a.getAttribute('href')));
-  if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { es.forEach(en => { if (en.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id)); }); }, { rootMargin: '-40% 0px -55% 0px' }); secs.forEach(s => s && io.observe(s)); }
+  /* troca de página pelo endereço (menu, botões, voltar do navegador) */
+  function aoMudarEndereco(primeira){
+    const h = location.hash;
+    if (h === '#nao-contar' || h === '#contar') {
+      try { if (h === '#nao-contar') localStorage.setItem('skipgc', 't'); else localStorage.removeItem('skipgc'); } catch (e) {}
+      alert(h === '#nao-contar' ? 'Pronto: as visitas deste navegador não entram mais na contagem do site.' : 'Pronto: as visitas deste navegador voltam a ser contadas.');
+    }
+    if (h === '#apresentacao') { presOn(); contarVisita('/apresentacao', primeira); return; }
+    if (document.body.classList.contains('apresenta')) presFim();
+    const r = lerRota(); mostrar(r);
+    contarVisita('/' + (r.pg === 'inicio' ? '' : r.pg + (r.arg ? '/' + r.arg : '')), primeira);
+  }
+  addEventListener('hashchange', () => aoMudarEndereco(false));
+  aoMudarEndereco(true);
 }
 
 if (window.DADOS) start(window.DADOS);

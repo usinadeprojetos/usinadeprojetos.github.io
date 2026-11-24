@@ -24,3 +24,6 @@ try { idx = JSON.parse(await fs.readFile('historico/index.json', 'utf8')); } cat
 const dias = [...new Set([...(idx.dias || []), dia])].sort();
 await fs.writeFile('historico/index.json', JSON.stringify({ desde: dias[0], dias }));
 console.log(`Histórico: retrato de ${dia} ${hora} gravado (${Object.keys(projetos).length} projetos; ${dias.length} dias no índice, desde ${dias[0]})`);
+
+// leitura diária do contador de visitas do site (historico/visitas.json); qualquer falha só vai para o log
+try { await import('./visitas.mjs'); } catch (e) { console.log('Visitas: leitura não executada (' + e.message + ')'); }
